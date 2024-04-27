@@ -1,0 +1,19 @@
+<mule xmlns="http://www.mulesoft.org/schema/mule/core"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns:opentelemetry-module="http://www.mulesoft.org/schema/mule/opentelemetry-module"
+      xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+          http://www.mulesoft.org/schema/mule/opentelemetry-module http://www.mulesoft.org/schema/mule/opentelemetry-module/current/mule-opentelemetry-module.xsd">
+
+    <opentelemetry-module:config name="config" configId="configId">
+        <opentelemetry-module:connection requiredParameter="aValue" />
+    </opentelemetry-module:config>
+
+    <flow name="sayHiFlow">
+        <opentelemetry-module:say-hi person="Mariano Gonzalez"/>
+    </flow>
+
+    <flow name="retrieveInfoFlow">
+        <opentelemetry-module:retrieve-info config-ref="config"/>
+    </flow>
+
+</mule>
