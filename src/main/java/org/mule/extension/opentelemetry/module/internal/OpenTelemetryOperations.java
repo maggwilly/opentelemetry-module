@@ -35,9 +35,9 @@ public class OpenTelemetryOperations {
 
 	@Execution(ExecutionType.CPU_LITE)
 	@MediaType(value = ANY, strict = false)
-	public void startTransaction(@Expression(value = ExpressionSupport.NOT_SUPPORTED) TraceContextPropagator context, CorrelationInfo correlationInfo) {
-		Context traceContext = transactionManager.getTraceContext(context.getAttributes(), DefaultContextMapGetter.INSTANCE);
-		Trace trace = new Trace("").setTransactionId(correlationInfo.getEventId()).setContext(traceContext).setTags(context.getAttributes()).setSpanKind(SpanKind.SERVER);
+	public void startTransaction(@Expression(value = ExpressionSupport.NOT_SUPPORTED) TraceContextPropagator propagator, CorrelationInfo correlationInfo) {
+		Context traceContext = transactionManager.getTraceContext(propagator.getAttributes(), DefaultContextMapGetter.INSTANCE);
+		Trace trace = new Trace("").setTransactionId(correlationInfo.getEventId()).setContext(traceContext).setTags(propagator.getAttributes()).setSpanKind(SpanKind.SERVER);
 		transactionManager.openTransaction(trace);
 	}
 

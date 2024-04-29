@@ -30,6 +30,10 @@ public class DistributedHttpContextPropagator extends HttpRequesterProvider impl
         return this;
     }
 
+    public String getContextId() {
+        return contextId;
+    }
+
     @Override
     public PropagatorType getType() {
         return PropagatorType.JSON_DISTRIBUTED;
