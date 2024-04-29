@@ -1,6 +1,5 @@
 package org.mule.extension.opentelemetry.module.internal;
 
-import org.mule.extension.http.internal.request.HttpRequesterProvider;
 import org.mule.extension.opentelemetry.module.internal.config.MetricConfig;
 import org.mule.extension.opentelemetry.module.internal.config.TracingConfig;
 import org.mule.extension.opentelemetry.module.internal.notification.MulePipelineMessageNotificationListener;
@@ -22,7 +21,7 @@ import javax.inject.Inject;
 
 
 @Operations(OpenTelemetryOperations.class)
-@ConnectionProviders({OpenTelemetryConnectionProvider.class,HttpRequesterProvider.class})
+@ConnectionProviders({OpenTelemetryConnectionProvider.class})
 public class OpenTelemetryConfiguration implements Startable {
     private final Logger LOGGER = LoggerFactory.getLogger("monitoring.opentelemetry.logger");
 

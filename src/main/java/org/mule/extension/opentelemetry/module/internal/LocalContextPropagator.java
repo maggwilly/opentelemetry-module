@@ -7,7 +7,7 @@ import org.mule.runtime.extension.api.annotation.param.Parameter;
 
 import java.util.Map;
 
-public class LocalMapTraceContextPropagator implements TraceContextPropagator {
+public class LocalContextPropagator implements TraceContextPropagator {
     @Content
     @Parameter
     private Map<String, String> attributes;

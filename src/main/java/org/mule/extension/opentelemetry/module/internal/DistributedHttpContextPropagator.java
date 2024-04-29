@@ -1,13 +1,14 @@
 package org.mule.extension.opentelemetry.module.internal;
 
 import io.opentelemetry.context.propagation.TextMapPropagator;
+import org.mule.extension.http.internal.request.HttpRequesterProvider;
 import org.mule.extension.opentelemetry.module.trace.JsonTraceContextPropagator;
 import org.mule.runtime.extension.api.annotation.param.Parameter;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class DistributedHttpTraceContextPropagator implements TraceContextPropagator {
+public class DistributedHttpContextPropagator extends HttpRequesterProvider implements TraceContextPropagator {
     public static final String CONTEXT_ID = "contextId";
     @Parameter
     private String contextId;
@@ -24,7 +25,7 @@ public class DistributedHttpTraceContextPropagator implements TraceContextPropag
         return JsonTraceContextPropagator.getInstance();
     }
 
-    public DistributedHttpTraceContextPropagator setContextId(String contextId) {
+    public DistributedHttpContextPropagator setContextId(String contextId) {
         this.contextId = contextId;
         return this;
     }

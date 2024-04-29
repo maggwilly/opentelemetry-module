@@ -19,7 +19,7 @@ import org.mule.runtime.extension.api.annotation.dsl.xml.Xml;
 @Configurations(OpenTelemetryConfiguration.class)
 @SubTypeMapping(baseType = MetricExporter.class,
 subTypes = {LoggingMetricExporter.class, OtlpGrpcMetricExporter.class, PrometheusExporter.class })
-@SubTypeMapping(baseType = TraceContextPropagator.class,subTypes = {LocalMapTraceContextPropagator.class })
+@SubTypeMapping(baseType = TraceContextPropagator.class,subTypes = {LocalContextPropagator.class, DistributedHttpContextPropagator.class })
 public class OpenTelemetryExtension {
 
 }
