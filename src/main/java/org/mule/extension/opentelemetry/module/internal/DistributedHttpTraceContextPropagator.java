@@ -8,13 +8,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class DistributedHttpTraceContextPropagator implements TraceContextPropagator {
+    public static final String CONTEXT_ID = "contextId";
     @Parameter
     private String contextId;
 
     @Override
     public Map<String, String> getAttributes() {
         return new HashMap<String, String>() {{
-            put("contextId", contextId);
+            put(CONTEXT_ID, contextId);
         }};
     }
 
