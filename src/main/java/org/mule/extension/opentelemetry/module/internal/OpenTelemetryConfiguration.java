@@ -1,12 +1,14 @@
 package org.mule.extension.opentelemetry.module.internal;
 
-import javax.inject.Inject;
-
-import org.mule.extension.opentelemetry.module.internal.provider.MetricExporter;
+import org.mule.extension.http.internal.request.HttpRequesterProvider;
+import org.mule.extension.opentelemetry.module.internal.config.MetricConfig;
+import org.mule.extension.opentelemetry.module.internal.config.TracingConfig;
+import org.mule.extension.opentelemetry.module.internal.notification.MulePipelineMessageNotificationListener;
 import org.mule.extension.opentelemetry.module.internal.singleton.MetricCollector;
 import org.mule.extension.opentelemetry.module.internal.singleton.OpenTelemetryProvider;
 import org.mule.runtime.api.lifecycle.InitialisationException;
 import org.mule.runtime.api.lifecycle.Startable;
+import org.mule.runtime.api.notification.NotificationListenerRegistry;
 import org.mule.runtime.extension.api.annotation.Operations;
 import org.mule.runtime.extension.api.annotation.connectivity.ConnectionProviders;
 import org.mule.runtime.extension.api.annotation.param.Parameter;
@@ -16,89 +18,108 @@ import org.mule.runtime.extension.api.annotation.param.display.Placement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.inject.Inject;
 
 
 @Operations(OpenTelemetryOperations.class)
-@ConnectionProviders(OpenTelemetryConnectionProvider.class)
-public class OpenTelemetryConfiguration implements Startable{
-	private final Logger LOGGER = LoggerFactory.getLogger("monitoring.opentelemetry.logger");
+@ConnectionProviders({OpenTelemetryConnectionProvider.class,HttpRequesterProvider.class})
+public class OpenTelemetryConfiguration implements Startable {
+    private final Logger LOGGER = LoggerFactory.getLogger("monitoring.opentelemetry.logger");
 
-	@Inject
-	private OpenTelemetryProvider openTelemetryProvider;
-	
-	@Inject
-	private MetricCollector metricCollector;
-	
-     @RefName
-     private String configName;
-  	  
-	  @DisplayName("Service Name")
-	  @Parameter
-	  private String serviceName;
-	
-	  @DisplayName("Service Version")
-	  @Parameter
-	  private String serviceVersion;
-	
-	  @Parameter
-	  @Placement(tab = "Metric")
-	  private MetricExporter metricExporter;
+    @Inject
+    NotificationListenerRegistry notificationListenerRegistry;
+    @Inject
+    private OpenTelemetryProvider openTelemetryProvider;
 
-	public String getConfigName() {
-		return configName;
-	}
+    @Inject
+    private MetricCollector metricCollector;
 
+    @RefName
+    private String configName;
 
-	public void setConfigName(String configName) {
-		this.configName = configName;
-	}
+    @DisplayName("Service Name")
+    @Parameter
+    private String serviceName;
 
+    @DisplayName("Service Version")
+    @Parameter
+    private String serviceVersion;
 
+    @Parameter
+    @Placement(tab = "Metric")
+    private MetricConfig metricConfig;
 
-	public void setServiceName(String serviceName) {
-		this.serviceName = serviceName;
-	}
+    @Parameter
+    @Placement(tab = "Tracing")
+    private TracingConfig tracingConfig;
+
+    public String getConfigName() {
+        return configName;
+    }
 
 
-	public void setServiceVersion(String serviceVersion) {
-		this.serviceVersion = serviceVersion;
-	}
+    public void setConfigName(String configName) {
+        this.configName = configName;
+    }
 
 
-	public MetricExporter getMetricExporter() {
-		return metricExporter;
-	}
+    public void setServiceName(String serviceName) {
+        this.serviceName = serviceName;
+    }
 
 
-	public void setMetricExporter(MetricExporter metricExporter) {
-		this.metricExporter = metricExporter;
-	}
+    public void setServiceVersion(String serviceVersion) {
+        this.serviceVersion = serviceVersion;
+    }
 
 
-	@Override
-	public void start() throws InitialisationException {
-		try {
-		openTelemetryProvider.initialise(this);
-		metricCollector.initialise(this);
-		}catch (Exception e) {
-			LOGGER.error("Failed to initialize the opentelemetry module: {} {}",e.getMessage(),this);
-		}
-	}
+    @Override
+    public void start() throws InitialisationException {
+        try {
+            notificationListenerRegistry.registerListener(new MulePipelineMessageNotificationListener());
+            openTelemetryProvider.initialise(this);
+            metricCollector.initialise(this);
+        } catch (Exception e) {
+            LOGGER.error("Failed to initialize the opentelemetry module: {} {}", e.getMessage(), this);
+        }
+    }
 
-	public String getServiceName() {
-		return this.serviceName;
-	}
+    public String getServiceName() {
+        return this.serviceName;
+    }
 
-	public String getServiceVersion() {
-		return this.serviceVersion;
-	}
+    public String getServiceVersion() {
+        return this.serviceVersion;
+    }
 
+    public MetricConfig getMetricConfig() {
+        return metricConfig;
+    }
 
-	@Override
-	public String toString() {
-		return "OpentelemetrymoduleConfiguration [configName=" + configName + ", serviceName=" + serviceName
-				+ ", serviceVersion=" + serviceVersion + ", metricExporter=" + metricExporter + "]";
-	}
+    public OpenTelemetryConfiguration setMetricConfig(MetricConfig metricConfig) {
+        this.metricConfig = metricConfig;
+        return this;
+    }
 
-	
+    public TracingConfig getTracingConfig() {
+        return tracingConfig;
+    }
+
+    public OpenTelemetryConfiguration setTracingConfig(TracingConfig tracingConfig) {
+        this.tracingConfig = tracingConfig;
+        return this;
+    }
+
+    @Override
+    public String toString() {
+        return "OpenTelemetryConfiguration{" +
+                "notificationListenerRegistry=" + notificationListenerRegistry +
+                ", openTelemetryProvider=" + openTelemetryProvider +
+                ", metricCollector=" + metricCollector +
+                ", configName='" + configName + '\'' +
+                ", serviceName='" + serviceName + '\'' +
+                ", serviceVersion='" + serviceVersion + '\'' +
+                ", metricConfig=" + metricConfig +
+                '}';
+    }
 }

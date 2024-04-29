@@ -1,19 +1,18 @@
 package org.mule.extension.opentelemetry.module.internal.singleton;
 
-import java.util.Map;
-import javax.inject.Inject;
-
-import org.mule.extension.opentelemetry.module.internal.OpenTelemetryConfiguration;
-import org.mule.extension.opentelemetry.module.internal.OplInitialisable;
-import org.mule.extension.opentelemetry.module.internal.OplUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.metrics.LongHistogram;
 import io.opentelemetry.api.metrics.Meter;
+import io.opentelemetry.sdk.metrics.SdkMeterProvider;
+import org.mule.extension.opentelemetry.module.internal.OpenTelemetryConfiguration;
+import org.mule.extension.opentelemetry.module.internal.OplInitialisable;
+import org.mule.extension.opentelemetry.module.utils.OplUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.inject.Inject;
+import java.util.Map;
 
 public class MetricCollector implements OplInitialisable {
 	private final Logger LOGGER = LoggerFactory.getLogger(MetricCollector.class);
@@ -35,8 +34,8 @@ public class MetricCollector implements OplInitialisable {
 
 
 	private Meter createMeter(OpenTelemetryConfiguration configuration) {
-		OpenTelemetry openTelemetry = openTelemetryProvider.getOpenTelemetry();
-		return openTelemetry.meterBuilder("instrumentation-" + configuration.getServiceName())
+		SdkMeterProvider openTelemetry = openTelemetryProvider.getMeterProvider();
+		return openTelemetry.meterBuilder(configuration.getConfigName())
 				.setInstrumentationVersion("1.0.0").build();
 	}
 

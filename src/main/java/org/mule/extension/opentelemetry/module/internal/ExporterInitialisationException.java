@@ -6,5 +6,4 @@ public class ExporterInitialisationException extends RuntimeException{
 		super(cause);
 	}
 
-
 }
