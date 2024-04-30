@@ -6,7 +6,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>6cde5e5e-816c-4ee5-b0ee-07655c9f5870</groupId>
 	<artifactId>opentelemetry-module</artifactId>
-	<version>1.2.1-SNAPSHOT</version>
+	<version>1.2.16-SNAPSHOT</version>
 	<packaging>mule-extension</packaging>
 	<name>opentelemetry-module</name>
     <properties>
@@ -70,21 +70,9 @@
 			<version>2.16.0</version>
 		</dependency>
 		<dependency>
-			<groupId>org.projectlombok</groupId>
-			<artifactId>lombok</artifactId>
-			<version>1.18.32</version>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
 			<groupId>org.mule.connectors</groupId>
 			<artifactId>mule-http-connector</artifactId>
 			<version>${muleHttpConnectorVersion}</version>
-			<classifier>mule-plugin</classifier>
-		</dependency>
-		<dependency>
-			<groupId>org.mule.modules</groupId>
-			<artifactId>mule-oauth-module</artifactId>
-			<version>1.1.8</version>
 			<classifier>mule-plugin</classifier>
 		</dependency>
 	</dependencies>
@@ -158,6 +146,12 @@
 				<version>1.25.0-alpha</version>
 				<type>pom</type>
 				<scope>import</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.mule.connectors</groupId>
+				<artifactId>mule-http-connector</artifactId>
+				<version>${muleHttpConnectorVersion}</version>
+				<classifier>mule-plugin</classifier>
 			</dependency>
 		</dependencies>
 

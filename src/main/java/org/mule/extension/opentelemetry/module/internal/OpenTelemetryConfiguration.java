@@ -7,7 +7,9 @@ import org.mule.extension.opentelemetry.module.internal.singleton.MetricCollecto
 import org.mule.extension.opentelemetry.module.internal.singleton.OpenTelemetryProvider;
 import org.mule.runtime.api.lifecycle.InitialisationException;
 import org.mule.runtime.api.lifecycle.Startable;
+import org.mule.runtime.api.meta.ExpressionSupport;
 import org.mule.runtime.api.notification.NotificationListenerRegistry;
+import org.mule.runtime.extension.api.annotation.Expression;
 import org.mule.runtime.extension.api.annotation.Operations;
 import org.mule.runtime.extension.api.annotation.connectivity.ConnectionProviders;
 import org.mule.runtime.extension.api.annotation.param.Parameter;
@@ -46,10 +48,12 @@ public class OpenTelemetryConfiguration implements Startable {
 
     @Parameter
     @Placement(tab = "Metric")
+    @Expression(ExpressionSupport.NOT_SUPPORTED)
     private MetricConfig metricConfig;
 
     @Parameter
     @Placement(tab = "Tracing")
+    @Expression(ExpressionSupport.NOT_SUPPORTED)
     private TracingConfig tracingConfig;
 
     public String getConfigName() {

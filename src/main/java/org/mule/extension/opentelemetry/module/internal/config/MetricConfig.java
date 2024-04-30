@@ -1,10 +1,13 @@
 package org.mule.extension.opentelemetry.module.internal.config;
 
 import org.mule.extension.opentelemetry.module.internal.provider.MetricExporter;
+import org.mule.runtime.api.meta.ExpressionSupport;
+import org.mule.runtime.extension.api.annotation.Expression;
 import org.mule.runtime.extension.api.annotation.param.Parameter;
 
 public class MetricConfig {
     @Parameter
+    @Expression(ExpressionSupport.NOT_SUPPORTED)
     private MetricExporter metricExporter;
 
     public MetricExporter getMetricExporter() {
