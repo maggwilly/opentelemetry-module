@@ -2,9 +2,12 @@ package org.mule.extension.opentelemetry.module.trace;
 
 import com.google.common.base.Strings;
 import io.opentelemetry.context.propagation.TextMapSetter;
+import org.mule.extension.opentelemetry.module.internal.connection.ConnectionManagementStrategy;
 import org.mule.extension.opentelemetry.module.internal.http.HttpConnection;
 import org.mule.extension.opentelemetry.module.internal.http.HttpRequestBuilder;
 import org.mule.extension.opentelemetry.module.internal.http.HttpUtils;
+import org.mule.runtime.api.connection.ConnectionException;
+import org.mule.runtime.api.connection.ConnectionHandler;
 import org.mule.runtime.api.message.Message;
 import org.mule.runtime.api.metadata.DataType;
 import org.mule.runtime.api.metadata.MediaType;
@@ -19,18 +22,17 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 import java.util.Objects;
-import java.util.function.Supplier;
 
 import static org.mule.extension.opentelemetry.module.internal.http.HttpConstants.CONTENT_TYPE_HEADER;
 import static org.mule.extension.opentelemetry.module.internal.http.HttpConstants.RESPONSE_TIMEOUT;
 
 public class RestDistributedMapSetter  implements TextMapSetter<Map<String, String>> {
     private final Logger LOGGER = LoggerFactory.getLogger(RestDistributedMapSetter.class);
-    private final Supplier<HttpConnection> connectionSupplier;
+    private final ConnectionManagementStrategy<HttpConnection> managementStrategy;
     private final TransformationService transformationService;
 
-    public RestDistributedMapSetter(Supplier<HttpConnection> connectionSupplier, TransformationService transformationService) {
-        this.connectionSupplier = connectionSupplier;
+    public RestDistributedMapSetter(ConnectionManagementStrategy<HttpConnection> managementStrategy, TransformationService transformationService) {
+        this.managementStrategy = managementStrategy;
         this.transformationService = transformationService;
     }
 
@@ -41,12 +43,17 @@ public class RestDistributedMapSetter  implements TextMapSetter<Map<String, Stri
         if (Objects.nonNull(carrier) && !Strings.isNullOrEmpty(key)) {
             carrier.put(key, value);
             String id = String.format("%s_%s",carrier.get(DistributedContextPropagator.CONTEXT_ID_KEY),key) ;
-            doRemoteSet(value, id);
+            try {
+                doRemoteSet(value, id);
+            } catch (Exception e) {
+                LOGGER.error("Error setting {} - {}", key, e.getMessage());
+            }
         }
     }
 
-    private void doRemoteSet(String value, String id) {
-        HttpConnection httpConnection = connectionSupplier.get();
+    private void doRemoteSet(String value, String id) throws ConnectionException {
+        ConnectionHandler<HttpConnection> connectionHandler = managementStrategy.getConnectionHandler();
+        HttpConnection httpConnection = connectionHandler.getConnection();
         HttpRequestBuilder httpRequestBuilder = new HttpRequestBuilder(true);
         TypedValue<String> stringTypedValue = new TypedValue<>(value, DataType.JSON_STRING);
         HttpEntity requestEntity = createRequestEntity(httpRequestBuilder, stringTypedValue);

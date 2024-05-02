@@ -14,6 +14,7 @@ public class MapSetterFactory implements Factory<TraceContextPropagator, TextMap
     public TextMapSetter<Map<String, String>> create(TraceContextPropagator contextPropagator) {
         if(contextPropagator instanceof DistributedContextPropagator){
             Propagator propagator = ((DistributedContextPropagator) contextPropagator).getPropagator();
+            return propagator.setter();
         }
         return DefaultContextMapSetter.INSTANCE;
     }

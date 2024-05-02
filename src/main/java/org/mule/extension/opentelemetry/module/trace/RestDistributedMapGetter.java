@@ -1,11 +1,12 @@
 package org.mule.extension.opentelemetry.module.trace;
 
 import io.opentelemetry.context.propagation.TextMapGetter;
+import org.mule.extension.opentelemetry.module.internal.connection.ConnectionManagementStrategy;
 import org.mule.extension.opentelemetry.module.internal.http.HttpConnection;
 import org.mule.extension.opentelemetry.module.internal.http.HttpRequestBuilder;
 import org.mule.extension.opentelemetry.module.internal.http.HttpUtils;
 import org.mule.runtime.api.connection.ConnectionException;
-import org.mule.runtime.api.transformation.TransformationService;
+import org.mule.runtime.api.connection.ConnectionHandler;
 import org.mule.runtime.http.api.HttpConstants;
 import org.mule.runtime.http.api.domain.entity.EmptyHttpEntity;
 import org.mule.runtime.http.api.domain.entity.HttpEntity;
@@ -20,16 +21,15 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.function.Supplier;
 
 import static org.mule.extension.opentelemetry.module.internal.http.HttpConstants.RESPONSE_TIMEOUT;
 
 public class RestDistributedMapGetter implements TextMapGetter<Map<String, String>> {
     private final Logger LOGGER = LoggerFactory.getLogger(RestDistributedMapSetter.class);
-    private final Supplier<HttpConnection> connectionSupplier;
+    private final ConnectionManagementStrategy<HttpConnection> managementStrategy;
 
-    public RestDistributedMapGetter(Supplier<HttpConnection> connectionSupplier) {
-        this.connectionSupplier = connectionSupplier;
+    public RestDistributedMapGetter(ConnectionManagementStrategy<HttpConnection> managementStrategy) {
+        this.managementStrategy = managementStrategy;
     }
 
     @Override
@@ -50,7 +50,7 @@ public class RestDistributedMapGetter implements TextMapGetter<Map<String, Strin
                 CompletableFuture<HttpResponse> httpResponseCompletableFuture = doRemoteGet(id);
                 byte[] bytes = httpResponseCompletableFuture.get().getEntity().getBytes();
                 return new String(bytes);
-            } catch (IOException | InterruptedException | ExecutionException e) {
+            } catch (Exception e) {
                 LOGGER.error("Error getting {} - {}", key, e.getMessage());
                 return "";
             }
@@ -59,8 +59,9 @@ public class RestDistributedMapGetter implements TextMapGetter<Map<String, Strin
         return null;
     }
 
-    private CompletableFuture<HttpResponse> doRemoteGet(String id) throws IOException {
-        HttpConnection httpConnection = connectionSupplier.get();
+    private CompletableFuture<HttpResponse> doRemoteGet(String id) throws IOException, ConnectionException {
+        ConnectionHandler<HttpConnection> connectionHandler = managementStrategy.getConnectionHandler();
+        HttpConnection httpConnection = connectionHandler.getConnection();
         HttpRequestBuilder httpRequestBuilder = new HttpRequestBuilder(true);
         HttpEntity requestEntity = new EmptyHttpEntity();
         HttpRequest httpRequest = createRequest(httpRequestBuilder, requestEntity, String.format("%s/%s", httpConnection.getUrl(), id));

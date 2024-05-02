@@ -32,15 +32,6 @@ public class LocalContextPropagator implements TraceContextPropagator {
         return W3CTraceContextPropagator.getInstance();
     }
 
-    @Override
-    public TextMapGetter<Map<String, String>> getter() {
-        return DefaultContextMapGetter.INSTANCE;
-    }
-
-    @Override
-    public TextMapSetter<Map<String, String>> Setter() {
-        return DefaultContextMapSetter.INSTANCE;
-    }
 
     public void setAttributes(Map<String, String> attributes) {
         this.attributes = attributes;

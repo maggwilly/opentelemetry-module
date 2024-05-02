@@ -7,21 +7,17 @@ import org.mule.extension.opentelemetry.module.internal.TraceContextPropagator;
 import org.mule.extension.opentelemetry.module.internal.http.HttpConnection;
 import org.mule.runtime.api.meta.ExpressionSupport;
 import org.mule.runtime.api.transformation.TransformationService;
+import org.mule.runtime.extension.api.annotation.Alias;
 import org.mule.runtime.extension.api.annotation.Expression;
 import org.mule.runtime.extension.api.annotation.param.*;
 
 import javax.inject.Inject;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Supplier;
 
 public class DistributedContextPropagator implements TraceContextPropagator {
     public static final String CONTEXT_ID_KEY = "contextId";
-    @Inject
-    private TransformationService transformationService;
 
-    @Connection
-    private Supplier<HttpConnection>  connectionSupplier;
     @Parameter
     private String contextId;
 
@@ -45,16 +41,6 @@ public class DistributedContextPropagator implements TraceContextPropagator {
     @Override
     public TextMapPropagator getTxtMapPropagator() {
         return JsonTraceContextPropagator.getInstance();
-    }
-
-    @Override
-    public TextMapGetter<Map<String, String>> getter() {
-        return new RestDistributedMapGetter(connectionSupplier);
-    }
-
-    @Override
-    public TextMapSetter<Map<String, String>> Setter() {
-        return new RestDistributedMapSetter(connectionSupplier, transformationService);
     }
 
     public String getContextId() {

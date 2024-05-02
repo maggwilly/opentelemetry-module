@@ -2,10 +2,10 @@ package org.mule.extension.opentelemetry.module.internal;
 
 import org.mule.extension.opentelemetry.module.internal.config.MetricConfig;
 import org.mule.extension.opentelemetry.module.internal.config.TracingConfig;
-import org.mule.extension.opentelemetry.module.internal.http.HttpConnectionProvider;
 import org.mule.extension.opentelemetry.module.internal.notification.MulePipelineMessageNotificationListener;
 import org.mule.extension.opentelemetry.module.internal.singleton.MetricCollector;
 import org.mule.extension.opentelemetry.module.internal.singleton.OpenTelemetryProvider;
+import org.mule.extension.opentelemetry.module.trace.HttpRestPropagator;
 import org.mule.runtime.api.lifecycle.InitialisationException;
 import org.mule.runtime.api.lifecycle.Startable;
 import org.mule.runtime.api.meta.ExpressionSupport;
@@ -24,7 +24,7 @@ import javax.inject.Inject;
 
 
 @Operations(OpenTelemetryOperations.class)
-@ConnectionProviders({HttpConnectionProvider.class})
+@ConnectionProviders({OpenTelemetryConnectionProvider.class})
 public class OpenTelemetryConfiguration implements Startable {
     private final Logger LOGGER = LoggerFactory.getLogger("monitoring.opentelemetry.logger");
 

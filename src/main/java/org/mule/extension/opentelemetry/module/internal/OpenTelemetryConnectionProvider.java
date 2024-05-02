@@ -6,6 +6,7 @@ import org.mule.runtime.api.connection.PoolingConnectionProvider;
 import org.mule.runtime.api.connection.ConnectionProvider;
 import org.mule.runtime.api.connection.CachedConnectionProvider;
 
+import org.mule.runtime.extension.api.annotation.Alias;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

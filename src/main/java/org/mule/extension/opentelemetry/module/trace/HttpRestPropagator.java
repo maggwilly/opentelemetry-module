@@ -1,8 +1,16 @@
 package org.mule.extension.opentelemetry.module.trace;
 
+import io.opentelemetry.context.propagation.TextMapGetter;
+import io.opentelemetry.context.propagation.TextMapSetter;
 import org.mule.extension.http.api.request.authentication.HttpRequestAuthentication;
+import org.mule.extension.opentelemetry.module.internal.connection.CachedConnectionHandler;
+import org.mule.extension.opentelemetry.module.internal.connection.CachedConnectionManagementStrategy;
+import org.mule.extension.opentelemetry.module.internal.connection.ConnectionManagementStrategy;
 import org.mule.extension.opentelemetry.module.internal.http.HttpConnection;
 import org.mule.extension.opentelemetry.module.internal.http.HttpRequesterConnectionManager;
+import org.mule.runtime.api.connection.ConnectionException;
+import org.mule.runtime.api.connection.ConnectionProvider;
+import org.mule.runtime.api.connection.ConnectionValidationResult;
 import org.mule.runtime.api.exception.MuleException;
 import org.mule.runtime.api.lifecycle.Disposable;
 import org.mule.runtime.api.lifecycle.Initialisable;
@@ -10,8 +18,10 @@ import org.mule.runtime.api.lifecycle.InitialisationException;
 import org.mule.runtime.api.meta.ExpressionSupport;
 import org.mule.runtime.api.tls.TlsContextFactory;
 import org.mule.runtime.api.transformation.TransformationService;
+import org.mule.runtime.core.api.MuleContext;
+import org.mule.runtime.core.api.lifecycle.LifecycleUtils;
+import org.mule.runtime.core.internal.connection.ConnectionHandlerAdapter;
 import org.mule.runtime.extension.api.annotation.Expression;
-import org.mule.runtime.extension.api.annotation.param.Connection;
 import org.mule.runtime.extension.api.annotation.param.Optional;
 import org.mule.runtime.extension.api.annotation.param.Parameter;
 import org.mule.runtime.extension.api.annotation.param.RefName;
@@ -23,24 +33,23 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
-import java.util.function.Supplier;
 
-import static org.mule.runtime.core.api.lifecycle.LifecycleUtils.disposeIfNeeded;
+import java.util.Map;
 
-public final class HttpRestPropagator implements Propagator, Initialisable , Disposable {
+import static org.mule.runtime.api.connection.ConnectionValidationResult.success;
+import static org.mule.runtime.core.api.lifecycle.LifecycleUtils.initialiseIfNeeded;
+public final class HttpRestPropagator implements ConnectionProvider<HttpConnection>, Propagator, Initialisable , Disposable{
     private final Logger LOGGER = LoggerFactory.getLogger(HttpRestPropagator.class);
 
-    private static HttpConnection httpConnection;
     private static final String NAME_PATTERN = "http.requester.%s";
     @Inject
     private HttpRequesterConnectionManager connectionManager;
     @RefName
     private String configName;
     @Inject
-    private TransformationService transformationService;
-
-    @Connection
-    private Supplier<HttpConnection>  connectionSupplier;
+    protected TransformationService transformationService;
+    @Inject
+    private MuleContext muleContext;
     @Parameter
     @Example("https://www.exemple.com/propagator/v1/context")
     private String url;
@@ -56,6 +65,7 @@ public final class HttpRestPropagator implements Propagator, Initialisable , Dis
     @Placement(tab = "Authentication")
     @Expression(ExpressionSupport.NOT_SUPPORTED)
     private HttpRequestAuthentication authentication;
+    private CachedConnectionManagementStrategy<HttpConnection> connectionManagementStrategy;
 
 
     public String getUrl() {
@@ -103,24 +113,62 @@ public final class HttpRestPropagator implements Propagator, Initialisable , Dis
 
     @Override
     public void initialise() throws InitialisationException {
+        this.connectionManagementStrategy = new CachedConnectionManagementStrategy<>(this, muleContext);
+        if (tlsContext != null) {
+            initialiseIfNeeded(tlsContext);
+        }
+    }
+    @Override
+    public HttpConnection connect() throws ConnectionException {
+        java.util.Optional<HttpRequesterConnectionManager.ShareableHttpClient> client = this.connectionManager.lookup(this.configName);
+        HttpRequesterConnectionManager.ShareableHttpClient httpClient = client.orElseGet(() -> this.connectionManager.create(this.configName, this.getHttpClientConfiguration()));
+        HttpConnection httpConnection = new HttpConnection(httpClient, authentication, url);
         try {
-            java.util.Optional<HttpRequesterConnectionManager.ShareableHttpClient> client = connectionManager.lookup(configName);
-            HttpRequesterConnectionManager.ShareableHttpClient httpClient = client.orElseGet(() -> connectionManager.create(configName, this.getHttpClientConfiguration()));
-            httpConnection = new HttpConnection(httpClient, authentication,url);
             httpConnection.start();
         } catch (MuleException e) {
-            LOGGER.warn("Failed to create httpClient - {}", e.getMessage());
+            throw new ConnectionException(e);
+        }
+
+        return httpConnection;
+    }
+
+
+    @Override
+    public void disconnect(HttpConnection httpClient) {
+        try {
+            httpClient.stop();
+        } catch (MuleException e) {
+            if (LOGGER.isWarnEnabled()) {
+                LOGGER.warn("Found exception trying to stop http client: " + e.getMessage(), e);
+            }
         }
     }
 
     @Override
     public void dispose() {
-        if (authentication != null) {
-            disposeIfNeeded(authentication, LOGGER);
+        try {
+            if (this.authentication != null) {
+                LifecycleUtils.disposeIfNeeded(this.authentication, LOGGER);
+            }
+            connectionManagementStrategy.close();
+        } catch (MuleException e) {
+            LOGGER.warn("Found exception: " + e.getMessage(), e);
+
         }
     }
 
-    public static Supplier<HttpConnection> connectionSupplier(){
-      return () -> httpConnection;
+    @Override
+    public ConnectionValidationResult validate(HttpConnection httpExtensionClient) {
+        return success();
+    }
+
+    @Override
+    public TextMapGetter<Map<String, String>> getter() {
+        return new RestDistributedMapGetter(connectionManagementStrategy);
+    }
+
+    @Override
+    public TextMapSetter<Map<String, String>> setter() {
+        return new RestDistributedMapSetter(connectionManagementStrategy, transformationService);
     }
 }
