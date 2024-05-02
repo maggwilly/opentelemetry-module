@@ -1,17 +1,14 @@
 package org.mule.extension.opentelemetry.module.trace;
 
-import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.context.propagation.TextMapPropagator;
-import io.opentelemetry.context.propagation.TextMapSetter;
 import org.mule.extension.opentelemetry.module.internal.TraceContextPropagator;
-import org.mule.extension.opentelemetry.module.internal.http.HttpConnection;
 import org.mule.runtime.api.meta.ExpressionSupport;
-import org.mule.runtime.api.transformation.TransformationService;
-import org.mule.runtime.extension.api.annotation.Alias;
 import org.mule.runtime.extension.api.annotation.Expression;
-import org.mule.runtime.extension.api.annotation.param.*;
+import org.mule.runtime.extension.api.annotation.param.Content;
+import org.mule.runtime.extension.api.annotation.param.NullSafe;
+import org.mule.runtime.extension.api.annotation.param.Optional;
+import org.mule.runtime.extension.api.annotation.param.Parameter;
 
-import javax.inject.Inject;
 import java.util.HashMap;
 import java.util.Map;
 

@@ -3,9 +3,7 @@ package org.mule.extension.opentelemetry.module.trace;
 import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.context.propagation.TextMapSetter;
 import org.mule.extension.http.api.request.authentication.HttpRequestAuthentication;
-import org.mule.extension.opentelemetry.module.internal.connection.CachedConnectionHandler;
 import org.mule.extension.opentelemetry.module.internal.connection.CachedConnectionManagementStrategy;
-import org.mule.extension.opentelemetry.module.internal.connection.ConnectionManagementStrategy;
 import org.mule.extension.opentelemetry.module.internal.http.HttpConnection;
 import org.mule.extension.opentelemetry.module.internal.http.HttpRequesterConnectionManager;
 import org.mule.runtime.api.connection.ConnectionException;
@@ -20,7 +18,6 @@ import org.mule.runtime.api.tls.TlsContextFactory;
 import org.mule.runtime.api.transformation.TransformationService;
 import org.mule.runtime.core.api.MuleContext;
 import org.mule.runtime.core.api.lifecycle.LifecycleUtils;
-import org.mule.runtime.core.internal.connection.ConnectionHandlerAdapter;
 import org.mule.runtime.extension.api.annotation.Expression;
 import org.mule.runtime.extension.api.annotation.param.Optional;
 import org.mule.runtime.extension.api.annotation.param.Parameter;
@@ -33,7 +30,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
-
 import java.util.Map;
 
 import static org.mule.runtime.api.connection.ConnectionValidationResult.success;
@@ -93,11 +89,6 @@ public final class HttpRestPropagator implements ConnectionProvider<HttpConnecti
     public HttpRestPropagator setAuthentication(HttpRequestAuthentication authentication) {
         this.authentication = authentication;
         return this;
-    }
-
-    @Override
-    public PropagatorType getType() {
-        return PropagatorType.HTTP_REST;
     }
 
     private HttpClientConfiguration getHttpClientConfiguration() {
@@ -163,12 +154,12 @@ public final class HttpRestPropagator implements ConnectionProvider<HttpConnecti
     }
 
     @Override
-    public TextMapGetter<Map<String, String>> getter() {
-        return new RestDistributedMapGetter(connectionManagementStrategy);
+    public TextMapGetter<Map<String, String>> getter(String contextId) {
+        return new RestDistributedMapGetter(connectionManagementStrategy, contextId);
     }
 
     @Override
-    public TextMapSetter<Map<String, String>> setter() {
-        return new RestDistributedMapSetter(connectionManagementStrategy, transformationService);
+    public TextMapSetter<Map<String, String>> setter(String contextId) {
+        return new RestDistributedMapSetter(connectionManagementStrategy,contextId, transformationService);
     }
 }

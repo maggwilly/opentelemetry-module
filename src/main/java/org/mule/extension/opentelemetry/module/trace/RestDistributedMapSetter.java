@@ -30,10 +30,11 @@ public class RestDistributedMapSetter  implements TextMapSetter<Map<String, Stri
     private final Logger LOGGER = LoggerFactory.getLogger(RestDistributedMapSetter.class);
     private final ConnectionManagementStrategy<HttpConnection> managementStrategy;
     private final TransformationService transformationService;
-
-    public RestDistributedMapSetter(ConnectionManagementStrategy<HttpConnection> managementStrategy, TransformationService transformationService) {
+    private final String contextId;
+    public RestDistributedMapSetter(ConnectionManagementStrategy<HttpConnection> managementStrategy, String contextId, TransformationService transformationService) {
         this.managementStrategy = managementStrategy;
         this.transformationService = transformationService;
+        this.contextId=contextId;
     }
 
 
@@ -42,7 +43,7 @@ public class RestDistributedMapSetter  implements TextMapSetter<Map<String, Stri
         LOGGER.trace("Setting key {} value{}", key, value);
         if (Objects.nonNull(carrier) && !Strings.isNullOrEmpty(key)) {
             carrier.put(key, value);
-            String id = String.format("%s_%s",carrier.get(DistributedContextPropagator.CONTEXT_ID_KEY),key) ;
+            String id = String.format("%s_%s",contextId,key) ;
             try {
                 doRemoteSet(value, id);
             } catch (Exception e) {

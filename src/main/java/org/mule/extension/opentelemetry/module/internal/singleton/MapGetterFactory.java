@@ -13,8 +13,9 @@ public class MapGetterFactory implements Factory<TraceContextPropagator, TextMap
     @Override
     public TextMapGetter<Map<String, String>> create(TraceContextPropagator contextPropagator) {
         if(contextPropagator instanceof DistributedContextPropagator){
-            Propagator propagator = ((DistributedContextPropagator) contextPropagator).getPropagator();
-           return propagator.getter();
+            String contextId = ((DistributedContextPropagator) contextPropagator).getContextId();
+            Propagator propagator =  ((DistributedContextPropagator) contextPropagator).getPropagator();
+           return propagator.getter(contextId);
         }
         return DefaultContextMapGetter.INSTANCE;
     }

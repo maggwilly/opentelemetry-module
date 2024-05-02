@@ -20,16 +20,16 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 
 import static org.mule.extension.opentelemetry.module.internal.http.HttpConstants.RESPONSE_TIMEOUT;
 
 public class RestDistributedMapGetter implements TextMapGetter<Map<String, String>> {
     private final Logger LOGGER = LoggerFactory.getLogger(RestDistributedMapSetter.class);
     private final ConnectionManagementStrategy<HttpConnection> managementStrategy;
-
-    public RestDistributedMapGetter(ConnectionManagementStrategy<HttpConnection> managementStrategy) {
+    private final String contextId;
+    public RestDistributedMapGetter(ConnectionManagementStrategy<HttpConnection> managementStrategy, String contextId) {
         this.managementStrategy = managementStrategy;
+        this.contextId= contextId;
     }
 
     @Override
@@ -46,7 +46,7 @@ public class RestDistributedMapGetter implements TextMapGetter<Map<String, Strin
                 return value;
             }
             try {
-                String id = String.format("%s_%s", carrier.get(DistributedContextPropagator.CONTEXT_ID_KEY), key);
+                String id = String.format("%s_%s", contextId, key);
                 CompletableFuture<HttpResponse> httpResponseCompletableFuture = doRemoteGet(id);
                 byte[] bytes = httpResponseCompletableFuture.get().getEntity().getBytes();
                 return new String(bytes);
