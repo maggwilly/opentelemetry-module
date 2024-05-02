@@ -1,8 +1,8 @@
 package org.mule.extension.opentelemetry.module.internal.singleton;
 
+import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import org.mule.extension.opentelemetry.module.internal.OpenTelemetryConfiguration;
 import org.mule.extension.opentelemetry.module.internal.OplInitialisable;
-import org.mule.extension.opentelemetry.module.internal.TraceContextPropagator;
 import org.mule.extension.opentelemetry.module.utils.OplUtils;
 import org.mule.extension.opentelemetry.module.internal.provider.MetricExporter;
 
@@ -48,15 +48,14 @@ public class OpenTelemetryProvider implements OplInitialisable {
 
         tracerProvider = createTracerProvider(resource);
 
-        contextPropagators = createContextPropagators(configuration);
+        contextPropagators = createContextPropagators();
 
         OpenTelemetry openTelemetry = createOpenTelemetry();
         this.observeJvm(openTelemetry);
     }
 
-    private ContextPropagators createContextPropagators(OpenTelemetryConfiguration configuration) {
-        TraceContextPropagator contextPropagator = configuration.getTracingConfig().getContextPropagator();
-        TextMapPropagator textPropagator = TextMapPropagator.composite(contextPropagator.getTxtMapPropagator(), W3CBaggagePropagator.getInstance());
+    private ContextPropagators createContextPropagators() {
+        TextMapPropagator textPropagator = TextMapPropagator.composite(W3CTraceContextPropagator.getInstance(), W3CBaggagePropagator.getInstance());
         return ContextPropagators.create(textPropagator);
     }
 

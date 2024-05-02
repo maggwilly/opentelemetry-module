@@ -50,8 +50,8 @@ public class OpenTelemetryOperations {
 		TracingConfig tracingConfig = configuration.getTracingConfig();
 		TraceContextPropagator contextPropagator = tracingConfig.getContextPropagator();
 		TextMapGetter<Map<String, String>> mapTextMapGetter = getterFactory.create(contextPropagator);
-		Context traceContext = tracingManager.getTraceContext(contextPropagator.getAttributes(), mapTextMapGetter);
-		Trace trace = new Trace(name).setComponentLocation(componentLocation).setTransactionId(correlationInfo.getEventId()).setContext(traceContext).setTags(contextPropagator.getAttributes()).setSpanKind(SpanKind.SERVER);
+		Context traceContext = tracingManager.getTraceContext(null, mapTextMapGetter);
+		Trace trace = new Trace(name).setComponentLocation(componentLocation).setTransactionId(correlationInfo.getEventId()).setContext(traceContext).setTags(null).setSpanKind(SpanKind.SERVER);
 		tracingManager.openTransaction(trace);
 	}
 
