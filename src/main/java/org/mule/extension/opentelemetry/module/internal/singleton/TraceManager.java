@@ -11,7 +11,7 @@ import org.mule.extension.opentelemetry.module.internal.OpenTelemetryConfigurati
 import org.mule.extension.opentelemetry.module.internal.OplInitialisable;
 import org.mule.extension.opentelemetry.module.trace.Trace;
 import org.mule.extension.opentelemetry.module.trace.Transaction;
-import org.mule.extension.opentelemetry.module.internal.provider.TransactionManager;
+import org.mule.extension.opentelemetry.module.internal.provider.TracingManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,7 +20,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class TraceManager implements TransactionManager, OplInitialisable {
+public class TraceManager implements TracingManager, OplInitialisable {
     private static final Logger LOGGER = LoggerFactory.getLogger("monitoring.opentelemetry.logger");
     private final Map<String, Transaction> transactionMap = new ConcurrentHashMap<>();
     @Inject

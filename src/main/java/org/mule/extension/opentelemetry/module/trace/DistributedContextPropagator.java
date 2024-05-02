@@ -1,18 +1,27 @@
 package org.mule.extension.opentelemetry.module.trace;
 
+import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.context.propagation.TextMapPropagator;
+import io.opentelemetry.context.propagation.TextMapSetter;
 import org.mule.extension.opentelemetry.module.internal.TraceContextPropagator;
+import org.mule.extension.opentelemetry.module.internal.http.HttpConnection;
 import org.mule.runtime.api.meta.ExpressionSupport;
+import org.mule.runtime.api.transformation.TransformationService;
 import org.mule.runtime.extension.api.annotation.Expression;
-import org.mule.runtime.extension.api.annotation.param.Content;
-import org.mule.runtime.extension.api.annotation.param.NullSafe;
-import org.mule.runtime.extension.api.annotation.param.Optional;
-import org.mule.runtime.extension.api.annotation.param.Parameter;
+import org.mule.runtime.extension.api.annotation.param.*;
 
+import javax.inject.Inject;
 import java.util.HashMap;
-import java.util.Map;public class DistributedContextPropagator implements TraceContextPropagator {
-    public static final String CONTEXT_ID = "contextId";
+import java.util.Map;
+import java.util.function.Supplier;
 
+public class DistributedContextPropagator implements TraceContextPropagator {
+    public static final String CONTEXT_ID_KEY = "contextId";
+    @Inject
+    private TransformationService transformationService;
+
+    @Connection
+    private Supplier<HttpConnection>  connectionSupplier;
     @Parameter
     private String contextId;
 
@@ -29,7 +38,7 @@ import java.util.Map;public class DistributedContextPropagator implements TraceC
 
     @Override
     public Map<String, String> getAttributes() {
-        attributes.put(CONTEXT_ID, contextId);
+        attributes.put(CONTEXT_ID_KEY, contextId);
         return attributes;
     }
 
@@ -38,13 +47,23 @@ import java.util.Map;public class DistributedContextPropagator implements TraceC
         return JsonTraceContextPropagator.getInstance();
     }
 
+    @Override
+    public TextMapGetter<Map<String, String>> getter() {
+        return new RestDistributedMapGetter(connectionSupplier);
+    }
+
+    @Override
+    public TextMapSetter<Map<String, String>> Setter() {
+        return new RestDistributedMapSetter(connectionSupplier, transformationService);
+    }
+
     public String getContextId() {
         return contextId;
     }
 
     public DistributedContextPropagator setContextId(String contextId) {
         this.contextId = contextId;
-        attributes.put(CONTEXT_ID,contextId);
+        attributes.put(CONTEXT_ID_KEY,contextId);
         return this;
     }
 
@@ -56,4 +75,5 @@ import java.util.Map;public class DistributedContextPropagator implements TraceC
         this.propagator = propagator;
         return this;
     }
+
 }

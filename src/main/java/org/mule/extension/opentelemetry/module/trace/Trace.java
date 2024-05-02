@@ -3,6 +3,7 @@ package org.mule.extension.opentelemetry.module.trace;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.context.Context;
+import org.mule.runtime.api.component.location.ComponentLocation;
 
 
 import java.time.Instant;
@@ -16,7 +17,7 @@ public class Trace {
     private SpanKind spanKind;
     private String errorMessage;
     private StatusCode statusCode;
-
+    private ComponentLocation componentLocation;
     private Instant startTime = Instant.now();
     private Instant endTime;
 
@@ -39,6 +40,15 @@ public class Trace {
 
     public Trace setTags(Map<String, String> tags) {
         this.tags = tags;
+        return this;
+    }
+
+    public ComponentLocation getComponentLocation() {
+        return componentLocation;
+    }
+
+    public Trace setComponentLocation(ComponentLocation componentLocation) {
+        this.componentLocation = componentLocation;
         return this;
     }
 
