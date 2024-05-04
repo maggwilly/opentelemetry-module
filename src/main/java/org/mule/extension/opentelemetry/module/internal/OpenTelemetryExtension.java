@@ -1,10 +1,9 @@
 package org.mule.extension.opentelemetry.module.internal;
 
 import org.mule.extension.http.api.request.authentication.HttpRequestAuthentication;
-import org.mule.extension.opentelemetry.module.trace.DistributedContextPropagator;
-import org.mule.extension.opentelemetry.module.trace.HttpRestPropagator;
-import org.mule.extension.opentelemetry.module.trace.LocalContextPropagator;
-import org.mule.extension.opentelemetry.module.trace.Propagator;
+import org.mule.extension.opentelemetry.module.api.SpanContextHolder;
+import org.mule.extension.opentelemetry.module.api.TextMapContextHolder;
+import org.mule.extension.opentelemetry.module.api.ObjectStoreContextHolder;
 import org.mule.runtime.extension.api.annotation.Extension;
 import org.mule.runtime.extension.api.annotation.Import;
 import org.mule.runtime.extension.api.annotation.SubTypeMapping;
@@ -26,8 +25,7 @@ import org.mule.runtime.extension.api.annotation.dsl.xml.Xml;
 @Configurations(OpenTelemetryConfiguration.class)
 @SubTypeMapping(baseType = MetricExporter.class,
 subTypes = {LoggingMetricExporter.class, OtlpGrpcMetricExporter.class, PrometheusExporter.class })
-@SubTypeMapping(baseType = TraceContextPropagator.class,subTypes = {LocalContextPropagator.class, DistributedContextPropagator.class })
-@SubTypeMapping(baseType = Propagator.class, subTypes = {HttpRestPropagator.class})
+@SubTypeMapping(baseType = SpanContextHolder.class, subTypes = {TextMapContextHolder.class, ObjectStoreContextHolder.class})
 public class OpenTelemetryExtension {
 
 }

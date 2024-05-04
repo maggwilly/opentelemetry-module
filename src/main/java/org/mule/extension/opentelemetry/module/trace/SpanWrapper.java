@@ -2,34 +2,31 @@ package org.mule.extension.opentelemetry.module.trace;
 
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.StatusCode;
-import io.opentelemetry.context.Context;
 import org.mule.runtime.api.component.location.ComponentLocation;
 
 
 import java.time.Instant;
 import java.util.Map;
 
-public class Trace {
+public class SpanWrapper {
     private String transactionId;
     private Map<String, String> tags;
-    private final String name;
-    private Context context;
     private SpanKind spanKind;
     private String errorMessage;
     private StatusCode statusCode;
     private ComponentLocation componentLocation;
     private Instant startTime = Instant.now();
     private Instant endTime;
-
-    public Trace(String name) {
-        this.name = name;
+    private FlowSpan span;
+    public SpanWrapper(FlowSpan span) {
+        this.span = span;
     }
 
     public String getTransactionId() {
         return transactionId;
     }
 
-    public Trace setTransactionId(String transactionId) {
+    public SpanWrapper setTransactionId(String transactionId) {
         this.transactionId = transactionId;
         return this;
     }
@@ -38,7 +35,7 @@ public class Trace {
         return tags;
     }
 
-    public Trace setTags(Map<String, String> tags) {
+    public SpanWrapper setTags(Map<String, String> tags) {
         this.tags = tags;
         return this;
     }
@@ -47,21 +44,8 @@ public class Trace {
         return componentLocation;
     }
 
-    public Trace setComponentLocation(ComponentLocation componentLocation) {
+    public SpanWrapper setComponentLocation(ComponentLocation componentLocation) {
         this.componentLocation = componentLocation;
-        return this;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public Context getContext() {
-        return context;
-    }
-
-    public Trace setContext(Context context) {
-        this.context = context;
         return this;
     }
 
@@ -69,7 +53,7 @@ public class Trace {
         return spanKind;
     }
 
-    public Trace setSpanKind(SpanKind spanKind) {
+    public SpanWrapper setSpanKind(SpanKind spanKind) {
         this.spanKind = spanKind;
         return this;
     }
@@ -78,7 +62,7 @@ public class Trace {
         return errorMessage;
     }
 
-    public Trace setErrorMessage(String errorMessage) {
+    public SpanWrapper setErrorMessage(String errorMessage) {
         this.errorMessage = errorMessage;
         return this;
     }
@@ -87,7 +71,7 @@ public class Trace {
         return statusCode;
     }
 
-    public Trace setStatusCode(StatusCode statusCode) {
+    public SpanWrapper setStatusCode(StatusCode statusCode) {
         this.statusCode = statusCode;
         return this;
     }
@@ -96,7 +80,7 @@ public class Trace {
         return startTime;
     }
 
-    public Trace setStartTime(Instant startTime) {
+    public SpanWrapper setStartTime(Instant startTime) {
         this.startTime = startTime;
         return this;
     }
@@ -105,21 +89,32 @@ public class Trace {
         return endTime;
     }
 
-    public Trace setEndTime(Instant endTime) {
+    public SpanWrapper setEndTime(Instant endTime) {
         this.endTime = endTime;
+        return this;
+    }
+
+    public FlowSpan getSpan() {
+        return span;
+    }
+
+    public SpanWrapper setSpan(FlowSpan span) {
+        this.span = span;
         return this;
     }
 
     @Override
     public String toString() {
-        return "Trace{" +
-                "name='" + name + '\'' +
-                ", context=" + context +
+        return "Span {" +
+                "transactionId='" + transactionId + '\'' +
+                ", tags=" + tags +
                 ", spanKind=" + spanKind +
                 ", errorMessage='" + errorMessage + '\'' +
                 ", statusCode=" + statusCode +
+                ", componentLocation=" + componentLocation +
                 ", startTime=" + startTime +
                 ", endTime=" + endTime +
+                ", span=" + span +
                 '}';
     }
 }
