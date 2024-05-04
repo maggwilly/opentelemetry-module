@@ -3,10 +3,11 @@ package org.mule.extension.opentelemetry.module.internal.provider;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.context.propagation.TextMapSetter;
+import org.mule.extension.opentelemetry.module.internal.OplInitialisable;
 import org.mule.extension.opentelemetry.module.internal.config.TracingConfig;
 import org.mule.extension.opentelemetry.module.trace.SpanWrapper;
 
-public interface TracingManager {
+public interface TracingManager extends OplInitialisable {
   void openTransaction(SpanWrapper spanWrapper,  TracingConfig tracingConfig);
   void closeTransaction(SpanWrapper spanWrapper);
 

@@ -1,6 +1,5 @@
 package org.mule.extension.opentelemetry.module.internal.singleton;
 
-import com.google.common.base.Strings;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanBuilder;
 import io.opentelemetry.api.trace.Tracer;
@@ -26,7 +25,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class TraceManager implements TracingManager, OplInitialisable {
+public class TraceManager implements TracingManager {
     private static final Logger LOGGER = LoggerFactory.getLogger(TraceManager.class);
     private final Map<String, Transaction> transactionMap = new ConcurrentHashMap<>();
     @Inject
@@ -35,11 +34,16 @@ public class TraceManager implements TracingManager, OplInitialisable {
     @Override
     public void openTransaction(SpanWrapper trace, TracingConfig tracingConfig) {
         LOGGER.info("Opening transaction - {}", trace);
+        try {
+
         Context traceContext = this.getTraceContext(trace.getContextHolder(),tracingConfig);
         final Transaction transaction = this.createTransaction(trace, traceContext);
         transactionMap.put(transaction.getId(), transaction);
         TransactionContext transactionContext = TransactionContext.of(transaction.getSpan());
         storeContext(trace, tracingConfig, transactionContext);
+        }catch (Exception e){
+            LOGGER.error("Error creating transaction - {}", e, e);
+        }
     }
 
     private void storeContext(SpanWrapper trace, TracingConfig tracingConfig, TransactionContext transactionContext) {
@@ -68,16 +72,20 @@ public class TraceManager implements TracingManager, OplInitialisable {
 
 
     private Transaction createTransaction(SpanWrapper trace, Context traceContext) {
+        LOGGER.info("Creating  Transaction for - {}", trace);
         SpanBuilder spanBuilder = createSpanBuilder(trace).setParent(traceContext);
         trace.getTags().forEach(spanBuilder::setAttribute);
+        LOGGER.info("Starting span  Transaction for - {}", trace);
         Span span = spanBuilder.startSpan();
         String traceId = span.getSpanContext().getTraceId();
+        LOGGER.info("Create  span  traceId for - {}", traceId);
         return new Transaction(trace.getTransactionId(),span,traceId,trace.getStartTime());
     }
 
     private SpanBuilder createSpanBuilder(SpanWrapper trace) {
         String name = trace.getSpan().getName();
-        String spanName = Strings.isNullOrEmpty(name)? trace.getComponentLocation().getLocation(): name;
+        String spanName = name==null? trace.getComponentLocation().getLocation(): name;
+        LOGGER.info("Creating  Span builder for - {}", spanName);
         return tracer.spanBuilder(spanName)
                 .setSpanKind(trace.getSpanKind())
                 .setStartTimestamp(trace.getStartTime());

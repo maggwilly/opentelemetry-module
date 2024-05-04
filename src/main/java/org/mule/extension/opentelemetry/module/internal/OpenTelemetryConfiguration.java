@@ -3,6 +3,7 @@ package org.mule.extension.opentelemetry.module.internal;
 import org.mule.extension.opentelemetry.module.internal.config.MetricConfig;
 import org.mule.extension.opentelemetry.module.internal.config.TracingConfig;
 import org.mule.extension.opentelemetry.module.internal.notification.MulePipelineMessageNotificationListener;
+import org.mule.extension.opentelemetry.module.internal.provider.TracingManager;
 import org.mule.extension.opentelemetry.module.internal.singleton.MetricCollector;
 import org.mule.extension.opentelemetry.module.internal.singleton.OpenTelemetryProvider;
 import org.mule.extension.opentelemetry.module.trace.HttpRestPropagator;
@@ -35,7 +36,8 @@ public class OpenTelemetryConfiguration implements Startable {
 
     @Inject
     private MetricCollector metricCollector;
-
+    @Inject
+    private TracingManager tracingManager;
     @RefName
     private String configName;
 
@@ -83,6 +85,7 @@ public class OpenTelemetryConfiguration implements Startable {
             notificationListenerRegistry.registerListener(new MulePipelineMessageNotificationListener());
             openTelemetryProvider.initialise(this);
             metricCollector.initialise(this);
+            tracingManager.initialise(this);
         } catch (Exception e) {
             LOGGER.error("Failed to initialize the opentelemetry module: {} {}", e.getMessage(), this);
         }

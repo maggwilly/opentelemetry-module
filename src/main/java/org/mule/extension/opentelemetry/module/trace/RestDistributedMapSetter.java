@@ -1,6 +1,5 @@
 package org.mule.extension.opentelemetry.module.trace;
 
-import com.google.common.base.Strings;
 import io.opentelemetry.context.propagation.TextMapSetter;
 import org.mule.extension.opentelemetry.module.internal.connection.ConnectionManagementStrategy;
 import org.mule.extension.opentelemetry.module.internal.http.HttpConnection;
@@ -41,7 +40,7 @@ public class RestDistributedMapSetter  implements TextMapSetter<Map<String, Stri
     @Override
     public void set(Map<String, String> carrier, String key, String value) {
         LOGGER.trace("Setting key {} value{}", key, value);
-        if (Objects.nonNull(carrier) && !Strings.isNullOrEmpty(key)) {
+        if (Objects.nonNull(carrier)) {
             carrier.put(key, value);
             String id = String.format("%s_%s",contextId,key) ;
             try {

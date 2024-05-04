@@ -8,6 +8,7 @@ import org.mule.extension.opentelemetry.module.trace.FlowSpan;
 import org.mule.extension.opentelemetry.module.trace.SpanWrapper;
 import org.mule.runtime.api.component.location.ComponentLocation;
 import org.mule.runtime.api.meta.model.operation.ExecutionType;
+import org.mule.runtime.api.store.ObjectStore;
 import org.mule.runtime.api.store.ObjectStoreManager;
 import org.mule.runtime.extension.api.annotation.Expression;
 import org.mule.runtime.extension.api.annotation.dsl.xml.ParameterDsl;
