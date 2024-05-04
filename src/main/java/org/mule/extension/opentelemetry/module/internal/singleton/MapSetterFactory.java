@@ -3,7 +3,7 @@ package org.mule.extension.opentelemetry.module.internal.singleton;
 import io.opentelemetry.context.propagation.TextMapSetter;
 import org.mule.extension.opentelemetry.module.internal.Factory;
 import org.mule.extension.opentelemetry.module.internal.TraceContextPropagator;
-import org.mule.extension.opentelemetry.module.trace.DefaultContextMapSetter;
+import org.mule.extension.opentelemetry.module.trace.ContextMapSetter;
 import org.mule.extension.opentelemetry.module.trace.DistributedContextPropagator;
 import org.mule.extension.opentelemetry.module.trace.Propagator;
 
@@ -17,6 +17,6 @@ public class MapSetterFactory implements Factory<TraceContextPropagator, TextMap
             Propagator propagator =  ((DistributedContextPropagator) contextPropagator).getPropagator();
             return propagator.setter(contextId);
         }
-        return DefaultContextMapSetter.INSTANCE;
+        return ContextMapSetter.INSTANCE;
     }
 }

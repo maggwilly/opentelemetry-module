@@ -2,6 +2,7 @@ package org.mule.extension.opentelemetry.module.trace;
 
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.StatusCode;
+import org.mule.extension.opentelemetry.module.api.SpanContextHolder;
 import org.mule.runtime.api.component.location.ComponentLocation;
 
 
@@ -18,6 +19,9 @@ public class SpanWrapper {
     private Instant startTime = Instant.now();
     private Instant endTime;
     private FlowSpan span;
+
+    private SpanContextHolder contextHolder;
+
     public SpanWrapper(FlowSpan span) {
         this.span = span;
     }
@@ -55,6 +59,15 @@ public class SpanWrapper {
 
     public SpanWrapper setSpanKind(SpanKind spanKind) {
         this.spanKind = spanKind;
+        return this;
+    }
+
+    public SpanContextHolder getContextHolder() {
+        return contextHolder;
+    }
+
+    public SpanWrapper setContextHolder(SpanContextHolder contextHolder) {
+        this.contextHolder = contextHolder;
         return this;
     }
 

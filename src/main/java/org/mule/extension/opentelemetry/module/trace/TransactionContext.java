@@ -73,4 +73,15 @@ public class TransactionContext {
         this.traceIdLongLowPart = traceIdLongLowPart;
         return this;
     }
+
+    @Override
+    public String toString() {
+        return "TransactionContext{" +
+                "context=" + context +
+                ", spanId='" + spanId + '\'' +
+                ", traceId='" + traceId + '\'' +
+                ", spanIdLong='" + spanIdLong + '\'' +
+                ", traceIdLongLowPart='" + traceIdLongLowPart + '\'' +
+                '}';
+    }
 }

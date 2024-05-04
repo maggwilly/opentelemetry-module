@@ -7,6 +7,8 @@ import org.mule.runtime.extension.api.annotation.param.Parameter;
 import org.mule.runtime.extension.api.annotation.param.display.DisplayName;
 import org.mule.runtime.extension.api.annotation.param.display.Summary;
 
+import java.util.Objects;
+
 public class FlowSpan  {
     @Parameter
     @DisplayName("Context ID")
@@ -51,6 +53,18 @@ public class FlowSpan  {
         return this;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        FlowSpan flowSpan = (FlowSpan) o;
+        return contextId.equals(flowSpan.contextId) && name.equals(flowSpan.name);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(contextId, name);
+    }
 
     @Override
     public String toString() {

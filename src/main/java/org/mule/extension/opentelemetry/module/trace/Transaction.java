@@ -3,9 +3,10 @@ package org.mule.extension.opentelemetry.module.trace;
 import io.opentelemetry.api.trace.Span;
 
 
+import java.io.Serializable;
 import java.time.Instant;
 
-public class Transaction {
+public class Transaction implements Serializable {
     private final String id;
     private final Span span;
     private final String traceId;

@@ -7,8 +7,11 @@ import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.context.propagation.TextMapPropagator;
+import io.opentelemetry.context.propagation.TextMapSetter;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
+import org.mule.extension.opentelemetry.module.api.ObjectStoreContextHolder;
 import org.mule.extension.opentelemetry.module.api.SpanContextHolder;
+import org.mule.extension.opentelemetry.module.api.TextMapContextHolder;
 import org.mule.extension.opentelemetry.module.internal.OpenTelemetryConfiguration;
 import org.mule.extension.opentelemetry.module.internal.OplInitialisable;
 import org.mule.extension.opentelemetry.module.internal.config.TracingConfig;
@@ -30,20 +33,39 @@ public class TraceManager implements TracingManager, OplInitialisable {
     private OpenTelemetryProvider openTelemetryProvider;
     private Tracer tracer;
     @Override
-    public void openTransaction(SpanWrapper trace, SpanContextHolder patent, TracingConfig tracingConfig) {
-        LOGGER.trace("Opening transaction - {}", trace);
+    public void openTransaction(SpanWrapper trace, TracingConfig tracingConfig) {
+        LOGGER.info("Opening transaction - {}", trace);
+        Context traceContext = this.getTraceContext(trace.getContextHolder(),tracingConfig);
+        final Transaction transaction = this.createTransaction(trace, traceContext);
+        transactionMap.put(transaction.getId(), transaction);
+        TransactionContext transactionContext = TransactionContext.of(transaction.getSpan());
+        storeContext(trace, tracingConfig, transactionContext);
+    }
 
-
+    private void storeContext(SpanWrapper trace, TracingConfig tracingConfig, TransactionContext transactionContext) {
+        LOGGER.info("Storing  transaction Context - {}", transactionContext);
         ObjectStore objectStore = tracingConfig.getObjectStore();
         String contextId = trace.getSpan().getContextId();
-        ContextObjectStoreGetter textMapGetter = new ContextObjectStoreGetter(contextId);
-        Context traceContext = this.getTraceContext(objectStore, textMapGetter);
-        final Transaction transaction = createTransaction(trace, traceContext);
-        transactionMap.put(transaction.getId(), transaction);
-
-
-
+        ContextObjectStoreSetter contextObjectStoreSetter = new ContextObjectStoreSetter(contextId);
+        this.injectTraceContext(transactionContext.getContext(), objectStore, contextObjectStoreSetter);
     }
+
+    private Context getTraceContext(SpanContextHolder contextHolder, TracingConfig tracingConfig) {
+        LOGGER.info("Getting  parent context - {}", contextHolder);
+        if(Objects.nonNull(contextHolder)) {
+            if (contextHolder instanceof TextMapContextHolder) {
+                Map<String, String> stringMap = ((TextMapContextHolder) contextHolder).getValue();
+                return getTraceContext(stringMap, ContextMapGetter.INSTANCE);
+            }
+            ObjectStoreContextHolder storeContextHolder = (ObjectStoreContextHolder) contextHolder;
+            ObjectStore objectStore = tracingConfig.getObjectStore();
+            ContextObjectStoreGetter textMapGetter = new ContextObjectStoreGetter(storeContextHolder.getContextId());
+            return getTraceContext(objectStore, textMapGetter);
+        }
+        return Context.current();
+    }
+
+
 
     private Transaction createTransaction(SpanWrapper trace, Context traceContext) {
         SpanBuilder spanBuilder = createSpanBuilder(trace).setParent(traceContext);
@@ -86,5 +108,10 @@ public class TraceManager implements TracingManager, OplInitialisable {
     public <T> Context getTraceContext(T carrier, TextMapGetter<T> textMapGetter) {
         TextMapPropagator textMapPropagator = openTelemetryProvider.getContextPropagators().getTextMapPropagator();
         return textMapPropagator.extract(Context.current(), carrier, textMapGetter);
+    }
+
+    public <T> void injectTraceContext(Context context, T carrier, TextMapSetter<T> textMapSetter) {
+        TextMapPropagator textMapPropagator = openTelemetryProvider.getContextPropagators().getTextMapPropagator();
+        textMapPropagator.inject(context, carrier, textMapSetter);
     }
 }

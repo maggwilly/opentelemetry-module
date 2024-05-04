@@ -5,6 +5,8 @@ import org.mule.runtime.extension.api.annotation.param.Parameter;
 import org.mule.runtime.extension.api.annotation.param.display.DisplayName;
 import org.mule.runtime.extension.api.annotation.param.display.Summary;
 
+import java.util.Objects;
+
 @TypeDsl(allowTopLevelDefinition = true)
 public class ObjectStoreContextHolder implements SpanContextHolder {
     @Parameter
@@ -21,4 +23,23 @@ public class ObjectStoreContextHolder implements SpanContextHolder {
         return this;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ObjectStoreContextHolder that = (ObjectStoreContextHolder) o;
+        return contextId.equals(that.contextId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(contextId);
+    }
+
+    @Override
+    public String toString() {
+        return "ObjectStoreContextHolder{" +
+                "contextId='" + contextId + '\'' +
+                '}';
+    }
 }
