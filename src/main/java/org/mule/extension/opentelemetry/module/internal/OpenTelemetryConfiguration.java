@@ -6,7 +6,6 @@ import org.mule.extension.opentelemetry.module.internal.notification.MulePipelin
 import org.mule.extension.opentelemetry.module.internal.provider.TracingManager;
 import org.mule.extension.opentelemetry.module.internal.singleton.MetricCollector;
 import org.mule.extension.opentelemetry.module.internal.singleton.OpenTelemetryProvider;
-import org.mule.extension.opentelemetry.module.trace.HttpRestPropagator;
 import org.mule.runtime.api.lifecycle.InitialisationException;
 import org.mule.runtime.api.lifecycle.Startable;
 import org.mule.runtime.api.meta.ExpressionSupport;
@@ -82,7 +81,8 @@ public class OpenTelemetryConfiguration implements Startable {
     @Override
     public void start() throws InitialisationException {
         try {
-            notificationListenerRegistry.registerListener(new MulePipelineMessageNotificationListener());
+            MulePipelineMessageNotificationListener notificationListener = new MulePipelineMessageNotificationListener(tracingManager);
+            notificationListenerRegistry.registerListener(notificationListener);
             openTelemetryProvider.initialise(this);
             metricCollector.initialise(this);
             tracingManager.initialise(this);

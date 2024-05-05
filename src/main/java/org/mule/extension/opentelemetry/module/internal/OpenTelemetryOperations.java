@@ -8,13 +8,14 @@ import org.mule.extension.opentelemetry.module.trace.FlowSpan;
 import org.mule.extension.opentelemetry.module.trace.SpanWrapper;
 import org.mule.runtime.api.component.location.ComponentLocation;
 import org.mule.runtime.api.meta.model.operation.ExecutionType;
-import org.mule.runtime.api.store.ObjectStore;
 import org.mule.runtime.api.store.ObjectStoreManager;
 import org.mule.runtime.extension.api.annotation.Expression;
 import org.mule.runtime.extension.api.annotation.dsl.xml.ParameterDsl;
 import org.mule.runtime.extension.api.annotation.execution.Execution;
 import org.mule.runtime.extension.api.annotation.param.*;
 import org.mule.runtime.extension.api.runtime.parameter.CorrelationInfo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import java.util.Map;
@@ -23,6 +24,8 @@ import static org.mule.runtime.api.meta.ExpressionSupport.NOT_SUPPORTED;
 import static org.mule.runtime.extension.api.annotation.param.MediaType.ANY;
 
 public class OpenTelemetryOperations {
+    private final Logger LOGGER = LoggerFactory.getLogger(OpenTelemetryOperations.class);
+
     @Inject
     private ObjectStoreManager objectStoreManager;
     @Inject
@@ -50,6 +53,7 @@ public class OpenTelemetryOperations {
     }
 
     private SpanWrapper getSpan(FlowSpan span, SpanContextHolder parent, CorrelationInfo correlationInfo, ComponentLocation componentLocation) {
+        LOGGER.info("Event Id {}", correlationInfo.getEventId());
         return new SpanWrapper(span)
                 .setComponentLocation(componentLocation)
                 .setContextHolder(parent)

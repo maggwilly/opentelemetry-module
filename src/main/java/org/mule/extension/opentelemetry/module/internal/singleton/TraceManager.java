@@ -12,18 +12,23 @@ import org.mule.extension.opentelemetry.module.api.ObjectStoreContextHolder;
 import org.mule.extension.opentelemetry.module.api.SpanContextHolder;
 import org.mule.extension.opentelemetry.module.api.TextMapContextHolder;
 import org.mule.extension.opentelemetry.module.internal.OpenTelemetryConfiguration;
-import org.mule.extension.opentelemetry.module.internal.OplInitialisable;
 import org.mule.extension.opentelemetry.module.internal.config.TracingConfig;
 import org.mule.extension.opentelemetry.module.internal.provider.TracingManager;
 import org.mule.extension.opentelemetry.module.trace.*;
+import org.mule.extension.opentelemetry.module.utils.OplConstants;
 import org.mule.runtime.api.store.ObjectStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
+import java.time.Instant;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static io.opentelemetry.instrumentation.api.instrumenter.http.internal.HttpAttributes.ERROR_TYPE;
+
 
 public class TraceManager implements TracingManager {
     private static final Logger LOGGER = LoggerFactory.getLogger(TraceManager.class);
@@ -92,15 +97,33 @@ public class TraceManager implements TracingManager {
     }
 
     @Override
-    public void closeTransaction(SpanWrapper spanWrapper) {
-        LOGGER.trace("Closing transaction - {}", spanWrapper);
-        Transaction transaction = getTransaction(spanWrapper.getTransactionId());
+    public Optional<Transaction> closeTransaction(String transactionId) {
+        LOGGER.trace("Closing transaction - {}", transactionId);
+        Transaction transaction = getTransaction(transactionId);
         if (Objects.nonNull(transaction)) {
             Transaction remove = transactionMap.remove(transaction.getId());
             Span span = remove.getSpan();
             span.end();
-            remove.setEndTime(spanWrapper.getEndTime());
+            remove.setEndTime(Instant.now());
+            return Optional.of(remove) ;
         }
+        return Optional.empty();
+    }
+
+    @Override
+    public Optional<Transaction> closeTransaction(String transactionId, Exception exception) {
+        LOGGER.trace("Closing transaction - {} - error {}", transactionId, exception);
+        Transaction transaction = getTransaction(transactionId);
+        if (Objects.nonNull(transaction)) {
+            Transaction remove = transactionMap.remove(transaction.getId());
+            Span span = remove.getSpan();
+            span.recordException(exception);
+            span.setAttribute(OplConstants.ERROR_MESSAGE.getKey(), exception.getMessage());
+            span.end();
+            remove.setEndTime(Instant.now());
+            return Optional.of(remove) ;
+        }
+        return Optional.empty();
     }
 
     private Transaction getTransaction(String transactionId) {

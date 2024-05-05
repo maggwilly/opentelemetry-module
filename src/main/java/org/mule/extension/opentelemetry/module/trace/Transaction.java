@@ -45,4 +45,15 @@ public class Transaction implements Serializable {
         this.endTime = endTime;
         return this;
     }
+
+    @Override
+    public String toString() {
+        return "Transaction{" +
+                "id='" + id + '\'' +
+                ", span=" + span +
+                ", traceId='" + traceId + '\'' +
+                ", startTime=" + startTime +
+                ", endTime=" + endTime +
+                '}';
+    }
 }
