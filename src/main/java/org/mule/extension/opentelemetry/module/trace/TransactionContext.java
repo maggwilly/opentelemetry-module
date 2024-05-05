@@ -7,13 +7,20 @@ import io.opentelemetry.context.Context;
 import org.mule.extension.opentelemetry.module.utils.EncodingUtil;
 
 public class TransactionContext {
+    private final Transaction transaction;
     private Context context = Context.current();
     private String spanId = SpanId.getInvalid();
     private String traceId = TraceId.getInvalid();
     private String spanIdLong = "0";
     private String traceIdLongLowPart = "0";
-    public static TransactionContext of(Span span) {
-        TransactionContext transactionContext = new TransactionContext()
+
+    public TransactionContext(Transaction transaction) {
+        this.transaction = transaction;
+    }
+
+    public static TransactionContext of(Transaction transaction) {
+        Span span = transaction.getSpan();
+        TransactionContext transactionContext = new TransactionContext(transaction)
                 .setContext(span.storeInContext(Context.current()))
                 .setSpanId(span.getSpanContext().getSpanId())
                 .setTraceId(span.getSpanContext().getTraceId());
@@ -26,8 +33,8 @@ public class TransactionContext {
         return transactionContext;
     }
 
-    public static TransactionContext current() {
-        return new TransactionContext();
+    public static TransactionContext current(Transaction transaction) {
+        return new TransactionContext(transaction);
     }
     public Context getContext() {
         return context;
@@ -64,6 +71,11 @@ public class TransactionContext {
         this.spanIdLong = spanIdLong;
         return this;
     }
+
+    public Transaction getTransaction() {
+        return transaction;
+    }
+
 
     public String getTraceIdLongLowPart() {
         return traceIdLongLowPart;

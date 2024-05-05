@@ -27,8 +27,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static io.opentelemetry.instrumentation.api.instrumenter.http.internal.HttpAttributes.ERROR_TYPE;
-
 
 public class TraceManager implements TracingManager {
     private static final Logger LOGGER = LoggerFactory.getLogger(TraceManager.class);
@@ -40,11 +38,10 @@ public class TraceManager implements TracingManager {
     public void openTransaction(SpanWrapper trace, TracingConfig tracingConfig) {
         LOGGER.info("Opening transaction - {}", trace);
         try {
-
         Context traceContext = this.getTraceContext(trace.getContextHolder(),tracingConfig);
         final Transaction transaction = this.createTransaction(trace, traceContext);
         transactionMap.put(transaction.getId(), transaction);
-        TransactionContext transactionContext = TransactionContext.of(transaction.getSpan());
+        TransactionContext transactionContext = TransactionContext.of(transaction);
         storeContext(trace, tracingConfig, transactionContext);
         }catch (Exception e){
             LOGGER.error("Error creating transaction - {}", e, e);
@@ -118,7 +115,7 @@ public class TraceManager implements TracingManager {
             Transaction remove = transactionMap.remove(transaction.getId());
             Span span = remove.getSpan();
             span.recordException(exception);
-            span.setAttribute(OplConstants.ERROR_MESSAGE.getKey(), exception.getMessage());
+            span.setAttribute(OplConstants.ERROR_MESSAGE.getKey(), exception.toString());
             span.end();
             remove.setEndTime(Instant.now());
             return Optional.of(remove) ;

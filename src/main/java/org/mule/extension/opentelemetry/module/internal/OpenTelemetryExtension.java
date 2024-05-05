@@ -4,10 +4,13 @@ import org.mule.extension.http.api.request.authentication.HttpRequestAuthenticat
 import org.mule.extension.opentelemetry.module.api.ObjectStoreContextHolder;
 import org.mule.extension.opentelemetry.module.api.SpanContextHolder;
 import org.mule.extension.opentelemetry.module.api.TextMapContextHolder;
-import org.mule.extension.opentelemetry.module.internal.provider.LoggingMetricExporter;
-import org.mule.extension.opentelemetry.module.internal.provider.MetricExporter;
-import org.mule.extension.opentelemetry.module.internal.provider.OtlpGrpcMetricExporter;
-import org.mule.extension.opentelemetry.module.internal.provider.PrometheusExporter;
+import org.mule.extension.opentelemetry.module.internal.provider.metric.LoggingMetricExporter;
+import org.mule.extension.opentelemetry.module.internal.provider.metric.MetricExporter;
+import org.mule.extension.opentelemetry.module.internal.provider.metric.OtlpGrpcMetricExporter;
+import org.mule.extension.opentelemetry.module.internal.provider.metric.PrometheusMetricExporter;
+import org.mule.extension.opentelemetry.module.internal.provider.span.LoggingSpanExporter;
+import org.mule.extension.opentelemetry.module.internal.provider.span.OtlpGrpcSpanExporter;
+import org.mule.extension.opentelemetry.module.internal.provider.span.SpanExporter;
 import org.mule.runtime.api.store.ObjectStore;
 import org.mule.runtime.extension.api.annotation.Configurations;
 import org.mule.runtime.extension.api.annotation.Extension;
@@ -26,7 +29,9 @@ import org.mule.runtime.extension.api.annotation.dsl.xml.Xml;
 @Import(type = ObjectStore.class)
 @Configurations(OpenTelemetryConfiguration.class)
 @SubTypeMapping(baseType = MetricExporter.class,
-subTypes = {LoggingMetricExporter.class, OtlpGrpcMetricExporter.class, PrometheusExporter.class })
+subTypes = {LoggingMetricExporter.class, OtlpGrpcMetricExporter.class, PrometheusMetricExporter.class })
+@SubTypeMapping(baseType = SpanExporter.class,
+        subTypes = {OtlpGrpcSpanExporter.class, LoggingSpanExporter.class })
 @SubTypeMapping(baseType = SpanContextHolder.class, subTypes = {TextMapContextHolder.class, ObjectStoreContextHolder.class})
 public class OpenTelemetryExtension {
 

@@ -1,4 +1,4 @@
-package org.mule.extension.opentelemetry.module.internal.provider;
+package org.mule.extension.opentelemetry.module.internal.provider.metric;
 
 import java.util.concurrent.TimeUnit;
 
@@ -11,7 +11,7 @@ import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 
 @TypeDsl(allowTopLevelDefinition = false, allowInlineDefinition = true)
-public class LoggingMetricExporter implements MetricExporter{
+public class LoggingMetricExporter implements MetricExporter {
 	 @Parameter
 	 @Optional(defaultValue ="5")
     private int interval;

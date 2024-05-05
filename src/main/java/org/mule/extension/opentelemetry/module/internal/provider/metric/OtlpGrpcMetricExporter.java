@@ -1,16 +1,15 @@
-package org.mule.extension.opentelemetry.module.internal.provider;
+package org.mule.extension.opentelemetry.module.internal.provider.metric;
 
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
-
+import io.opentelemetry.sdk.metrics.SdkMeterProvider;
+import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
+import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 import org.mule.runtime.extension.api.annotation.dsl.xml.TypeDsl;
 import org.mule.runtime.extension.api.annotation.param.Content;
 import org.mule.runtime.extension.api.annotation.param.Optional;
 import org.mule.runtime.extension.api.annotation.param.Parameter;
 
-import io.opentelemetry.sdk.metrics.SdkMeterProvider;
-import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
-import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 @TypeDsl(allowTopLevelDefinition = false, allowInlineDefinition = true)
 public class OtlpGrpcMetricExporter implements MetricExporter {
 	 @Parameter
@@ -26,9 +25,10 @@ public class OtlpGrpcMetricExporter implements MetricExporter {
     
 	@Override
 	public SdkMeterProviderBuilder createMeterProviderBuilder() {
-		io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter build = io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter.builder().setEndpoint(endPoint).setHeaders(() -> headers).build();
-		return SdkMeterProvider.builder()
-	            .registerMetricReader(PeriodicMetricReader.builder(build).setInterval(interval, TimeUnit.SECONDS).build());
+		io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter otlpGrpcMetricExporter = io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter.builder()
+				.setEndpoint(endPoint).setHeaders(() -> headers).build();
+		return SdkMeterProvider.builder().registerMetricReader(PeriodicMetricReader.builder(otlpGrpcMetricExporter)
+						.setInterval(interval, TimeUnit.SECONDS).build());
 	}
 
 	@Override

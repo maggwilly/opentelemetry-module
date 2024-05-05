@@ -1,6 +1,6 @@
 package org.mule.extension.opentelemetry.module.internal.config;
 
-import org.mule.extension.opentelemetry.module.internal.provider.MetricExporter;
+import org.mule.extension.opentelemetry.module.internal.provider.metric.MetricExporter;
 import org.mule.runtime.api.meta.ExpressionSupport;
 import org.mule.runtime.extension.api.annotation.Expression;
 import org.mule.runtime.extension.api.annotation.param.Parameter;
@@ -8,14 +8,14 @@ import org.mule.runtime.extension.api.annotation.param.Parameter;
 public class MetricConfig {
     @Parameter
     @Expression(ExpressionSupport.NOT_SUPPORTED)
-    private MetricExporter metricExporter;
+    private MetricExporter exporter;
 
-    public MetricExporter getMetricExporter() {
-        return metricExporter;
+    public MetricExporter getExporter() {
+        return exporter;
     }
 
 
-    public void setMetricExporter(MetricExporter metricExporter) {
-        this.metricExporter = metricExporter;
+    public void setExporter(MetricExporter exporter) {
+        this.exporter = exporter;
     }
 }

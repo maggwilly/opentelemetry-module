@@ -1,35 +1,25 @@
 package org.mule.extension.opentelemetry.module.internal.singleton;
 
-import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
-import org.mule.extension.opentelemetry.module.internal.OpenTelemetryConfiguration;
-import org.mule.extension.opentelemetry.module.internal.OplInitialisable;
-import org.mule.extension.opentelemetry.module.utils.OplUtils;
-import org.mule.extension.opentelemetry.module.internal.provider.MetricExporter;
-
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
+import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapPropagator;
-import io.opentelemetry.exporter.logging.LoggingSpanExporter;
 import io.opentelemetry.exporter.logging.SystemOutLogRecordExporter;
-import io.opentelemetry.instrumentation.runtimemetrics.java8.BufferPools;
-import io.opentelemetry.instrumentation.runtimemetrics.java8.Classes;
-import io.opentelemetry.instrumentation.runtimemetrics.java8.Cpu;
-import io.opentelemetry.instrumentation.runtimemetrics.java8.GarbageCollector;
-import io.opentelemetry.instrumentation.runtimemetrics.java8.MemoryPools;
-import io.opentelemetry.instrumentation.runtimemetrics.java8.Threads;
+import io.opentelemetry.instrumentation.runtimemetrics.java8.*;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 import io.opentelemetry.sdk.logs.export.BatchLogRecordProcessor;
-import io.opentelemetry.sdk.metrics.Aggregation;
-import io.opentelemetry.sdk.metrics.InstrumentSelector;
-import io.opentelemetry.sdk.metrics.InstrumentType;
-import io.opentelemetry.sdk.metrics.SdkMeterProvider;
-import io.opentelemetry.sdk.metrics.View;
+import io.opentelemetry.sdk.metrics.*;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
-import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.semconv.ResourceAttributes;
+import org.mule.extension.opentelemetry.module.internal.OpenTelemetryConfiguration;
+import org.mule.extension.opentelemetry.module.internal.OplInitialisable;
+import org.mule.extension.opentelemetry.module.internal.config.TracingConfig;
+import org.mule.extension.opentelemetry.module.internal.provider.metric.MetricExporter;
+import org.mule.extension.opentelemetry.module.internal.provider.span.SpanExporter;
+import org.mule.extension.opentelemetry.module.utils.OplUtils;
 
 public class OpenTelemetryProvider implements OplInitialisable {
 
@@ -46,7 +36,7 @@ public class OpenTelemetryProvider implements OplInitialisable {
 
         loggerProvider = createLoggerProvider(resource);
 
-        tracerProvider = createTracerProvider(resource);
+        tracerProvider = createTracerProvider(resource, configuration);
 
         contextPropagators = createContextPropagators();
 
@@ -69,15 +59,14 @@ public class OpenTelemetryProvider implements OplInitialisable {
         String histogramName = OplUtils.createHistogramName(configuration.getServiceName());
         InstrumentSelector selector = InstrumentSelector.builder().setType(InstrumentType.HISTOGRAM).setName(histogramName).build();
         View view = View.builder().setAggregation(Aggregation.base2ExponentialBucketHistogram()).build();
-        MetricExporter metricExporter = configuration.getMetricConfig().getMetricExporter();
+        MetricExporter metricExporter = configuration.getMetricConfig().getExporter();
         return metricExporter.createMeterProviderBuilder().registerView(selector, view).setResource(resource).build();
     }
 
-    private SdkTracerProvider createTracerProvider(Resource resource) {
-        return SdkTracerProvider.builder()
-                .addSpanProcessor(SimpleSpanProcessor.create(LoggingSpanExporter.create()))
-                .setResource(resource)
-                .build();
+    private SdkTracerProvider createTracerProvider(Resource resource, OpenTelemetryConfiguration configuration) {
+        TracingConfig tracingConfig = configuration.getTracingConfig();
+        SpanExporter exporter = tracingConfig.getExporter();
+        return exporter.createSdkTracerProviderBuilder(meterProvider).setResource(resource).build();
     }
 
     private SdkLoggerProvider createLoggerProvider(Resource resource) {

@@ -1,4 +1,4 @@
-package org.mule.extension.opentelemetry.module.internal.provider;
+package org.mule.extension.opentelemetry.module.internal.provider.metric;
 
 import org.mule.extension.opentelemetry.module.internal.ExporterInitialisationException;
 import org.mule.runtime.extension.api.annotation.dsl.xml.TypeDsl;
@@ -11,7 +11,7 @@ import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 
 @TypeDsl(allowTopLevelDefinition = false, allowInlineDefinition = true)
-public class PrometheusExporter implements MetricExporter {
+public class PrometheusMetricExporter implements MetricExporter {
 	
    @Parameter
    @DisplayName("Server port")

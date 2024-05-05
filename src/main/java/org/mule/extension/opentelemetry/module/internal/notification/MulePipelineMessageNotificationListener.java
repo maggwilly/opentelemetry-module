@@ -22,8 +22,11 @@ public class MulePipelineMessageNotificationListener implements PipelineMessageN
     public void onNotification(PipelineMessageNotification notification) {
         String contextId = notification.getEvent().getContext().getId();
         int action = Integer.parseInt(notification.getAction().getIdentifier());
+        if(action == PipelineMessageNotification.PROCESS_START){
+            LOGGER.info("PROCESS_START - Flow  received - ContextId {}", contextId);
+        }
         if(action == PipelineMessageNotification.PROCESS_COMPLETE){
-            LOGGER.info("PROCESS_COMPLETE - Flow {} received - ContextId {} - Action Name:{}",notification, contextId,notification.getActionName());
+            LOGGER.info("PROCESS_COMPLETE - Flow {} received - ContextId {}",notification, contextId);
             Exception exception = notification.getException();
             if(Objects.nonNull(exception)){
                 Optional<Transaction> transaction = tracingManager.closeTransaction(contextId, exception);
