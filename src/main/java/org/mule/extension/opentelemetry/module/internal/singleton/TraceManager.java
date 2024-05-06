@@ -1,22 +1,20 @@
 package org.mule.extension.opentelemetry.module.internal.singleton;
 
-import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.api.trace.SpanBuilder;
-import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.api.trace.*;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.context.propagation.TextMapGetter;
-import io.opentelemetry.context.propagation.TextMapPropagator;
-import io.opentelemetry.context.propagation.TextMapSetter;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
-import org.mule.extension.opentelemetry.module.api.ObjectStoreContextHolder;
 import org.mule.extension.opentelemetry.module.api.SpanContextHolder;
-import org.mule.extension.opentelemetry.module.api.TextMapContextHolder;
 import org.mule.extension.opentelemetry.module.internal.OpenTelemetryConfiguration;
-import org.mule.extension.opentelemetry.module.internal.config.TracingConfig;
 import org.mule.extension.opentelemetry.module.internal.provider.TracingManager;
-import org.mule.extension.opentelemetry.module.trace.*;
+import org.mule.extension.opentelemetry.module.trace.FlowSpan;
+import org.mule.extension.opentelemetry.module.trace.SpanWrapper;
+import org.mule.extension.opentelemetry.module.trace.Transaction;
+import org.mule.extension.opentelemetry.module.trace.TransactionContext;
 import org.mule.extension.opentelemetry.module.utils.OplConstants;
-import org.mule.runtime.api.store.ObjectStore;
+import org.mule.extension.opentelemetry.module.utils.OplUtils;
+import org.mule.runtime.api.component.location.ComponentLocation;
+import org.mule.runtime.api.store.ObjectStoreManager;
+import org.mule.runtime.api.util.MultiMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,101 +28,131 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class TraceManager implements TracingManager {
     private static final Logger LOGGER = LoggerFactory.getLogger(TraceManager.class);
+    public static final String ID_BRIDGE = "::";
     private final Map<String, Transaction> transactionMap = new ConcurrentHashMap<>();
     @Inject
     private OpenTelemetryProvider openTelemetryProvider;
+    @Inject
+    private ObjectStoreManager objectStoreManager;
+    @Inject
+    private ContextService contextService;
     private Tracer tracer;
+
     @Override
-    public void openTransaction(SpanWrapper trace, TracingConfig tracingConfig) {
-        LOGGER.info("Opening transaction - {}", trace);
-        try {
-        Context traceContext = this.getTraceContext(trace.getContextHolder(),tracingConfig);
-        final Transaction transaction = this.createTransaction(trace, traceContext);
+    public void startTransaction(SpanContextHolder source, SpanWrapper trace) {
+        LOGGER.trace("Setting context from   {}", source);
+        // extract and store parent context
+        Context context = contextService.extractContext(source);
+        String parentTransactionId = OplUtils.getParentTransactionId(trace.getEventId());
+        contextService.storeLocal(context, parentTransactionId);
+        startTransaction(trace);
+    }
+
+    @Override
+    public void startTransaction(SpanWrapper trace) {
+        LOGGER.trace("Opening transaction - {}", trace);
+        String transactionId = createTransactionId(trace.getEventId(), trace.getComponentLocation());
+        getTransaction(transactionId).ifPresent(transaction -> {
+            String parentTransactionId = OplUtils.getParentTransactionId(trace.getEventId());
+            Context context = contextService.retrieveLocal(parentTransactionId);
+            this.updateTransaction(transaction, context, trace.getSpan());
+            TransactionContext transactionContext = TransactionContext.of(transaction);
+            contextService.storeLocal(transactionContext.getContext(), trace.getEventId());
+        });
+    }
+
+    @Override
+    public void createTransaction(String eventId, ComponentLocation componentLocation) {
+        String transactionId = createTransactionId(eventId, componentLocation);
+        LOGGER.trace("Opening  Transaction  - {}", transactionId);
+        SpanBuilder spanBuilder = createSpanBuilder(componentLocation);
+        Transaction transaction = new Transaction(transactionId, spanBuilder);
+        saveTransaction(transaction);
+    }
+
+    private void saveTransaction(Transaction transaction) {
+        LOGGER.trace("Saving - {}", transaction);
         transactionMap.put(transaction.getId(), transaction);
-        TransactionContext transactionContext = TransactionContext.of(transaction);
-        storeContext(trace, tracingConfig, transactionContext);
-        }catch (Exception e){
-            LOGGER.error("Error creating transaction - {}", e, e);
-        }
     }
 
-    private void storeContext(SpanWrapper trace, TracingConfig tracingConfig, TransactionContext transactionContext) {
-        LOGGER.info("Storing  transaction Context - {}", transactionContext);
-        ObjectStore objectStore = tracingConfig.getObjectStore();
-        String contextId = trace.getSpan().getContextId();
-        ContextObjectStoreSetter contextObjectStoreSetter = new ContextObjectStoreSetter(contextId);
-        this.injectTraceContext(transactionContext.getContext(), objectStore, contextObjectStoreSetter);
+    private SpanBuilder createSpanBuilder(ComponentLocation componentLocation) {
+        String rootContainerName = componentLocation.getRootContainerName();
+        LOGGER.trace("Creating  Span builder for - {}", rootContainerName);
+        return tracer.spanBuilder(rootContainerName)
+                .setSpanKind(SpanKind.SERVER)
+                .setStartTimestamp(Instant.now());
     }
 
-    private Context getTraceContext(SpanContextHolder contextHolder, TracingConfig tracingConfig) {
-        LOGGER.info("Getting  parent context - {}", contextHolder);
-        if(Objects.nonNull(contextHolder)) {
-            if (contextHolder instanceof TextMapContextHolder) {
-                Map<String, String> stringMap = ((TextMapContextHolder) contextHolder).getValue();
-                return getTraceContext(stringMap, ContextMapGetter.INSTANCE);
+    private static String createTransactionId(String eventId, ComponentLocation componentLocation) {
+        String rootContainerName = componentLocation.getRootContainerName();
+        return OplUtils.getParentTransactionId(eventId) + ID_BRIDGE + rootContainerName;
+    }
+
+    private void updateTransaction(Transaction transaction, Context context, FlowSpan flowSpan) {
+        SpanBuilder spanBuilder = transaction.getSpanBuilder().setParent(context);
+        MultiMap<String, String> attributes = flowSpan.getAttributes();
+        attributes.forEach(spanBuilder::setAttribute);
+        Span startSpan = spanBuilder.startSpan();
+        LOGGER.trace("Creating  Span  - {} - started", startSpan);
+        startSpan.updateName(flowSpan.getName());
+        this.saveTransaction(transaction.setSpan(startSpan));
+    }
+
+
+    @Override
+    public Optional<Transaction> endTransaction(String eventId, ComponentLocation componentLocation) {
+        String transactionId = createTransactionId(eventId, componentLocation);
+        LOGGER.info("Ending transaction - {}", transactionId);
+        return getTransaction(transactionId).map(transaction -> {
+            Transaction remove = transactionMap.remove(transaction.getId());
+            Span span = remove.getSpan();
+            if (Objects.nonNull(span)) {
+                span.end();
+                LOGGER.trace("End of span - {} ", span);
             }
-            ObjectStoreContextHolder storeContextHolder = (ObjectStoreContextHolder) contextHolder;
-            ObjectStore objectStore = tracingConfig.getObjectStore();
-            ContextObjectStoreGetter textMapGetter = new ContextObjectStoreGetter(storeContextHolder.getContextId());
-            return getTraceContext(objectStore, textMapGetter);
-        }
-        return Context.current();
-    }
-
-
-
-    private Transaction createTransaction(SpanWrapper trace, Context traceContext) {
-        LOGGER.info("Creating  Transaction for - {}", trace);
-        SpanBuilder spanBuilder = createSpanBuilder(trace).setParent(traceContext);
-        trace.getTags().forEach(spanBuilder::setAttribute);
-        LOGGER.info("Starting span  Transaction for - {}", trace);
-        Span span = spanBuilder.startSpan();
-        String traceId = span.getSpanContext().getTraceId();
-        LOGGER.info("Create  span  traceId for - {}", traceId);
-        return new Transaction(trace.getTransactionId(),span,traceId,trace.getStartTime());
-    }
-
-    private SpanBuilder createSpanBuilder(SpanWrapper trace) {
-        String name = trace.getSpan().getName();
-        String spanName = name==null? trace.getComponentLocation().getLocation(): name;
-        LOGGER.info("Creating  Span builder for - {}", spanName);
-        return tracer.spanBuilder(spanName)
-                .setSpanKind(trace.getSpanKind())
-                .setStartTimestamp(trace.getStartTime());
+            return remove;
+        });
     }
 
     @Override
-    public Optional<Transaction> closeTransaction(String transactionId) {
-        LOGGER.trace("Closing transaction - {}", transactionId);
-        Transaction transaction = getTransaction(transactionId);
-        if (Objects.nonNull(transaction)) {
+    public Optional<Transaction> endTransaction(String eventId, ComponentLocation componentLocation, Exception exception) {
+        String transactionId = createTransactionId(eventId, componentLocation);
+        LOGGER.warn("Ending transaction - {} - error {}", transactionId, exception.getMessage());
+        return getTransaction(transactionId).map(transaction -> {
             Transaction remove = transactionMap.remove(transaction.getId());
             Span span = remove.getSpan();
-            span.end();
-            remove.setEndTime(Instant.now());
-            return Optional.of(remove) ;
-        }
-        return Optional.empty();
+            if (Objects.nonNull(span)) {
+                span.recordException(exception);
+                span.setAttribute(OplConstants.ERROR_MESSAGE.getKey(), exception.getMessage());
+                span.setStatus(transaction.getStatusCode(), exception.getMessage());
+                span.end();
+                LOGGER.trace("End of span - {} ", span);
+            }
+            return remove;
+        });
     }
 
-    @Override
-    public Optional<Transaction> closeTransaction(String transactionId, Exception exception) {
-        LOGGER.trace("Closing transaction - {} - error {}", transactionId, exception);
-        Transaction transaction = getTransaction(transactionId);
+    private Optional<Transaction> getTransaction(String transactionId) {
+        Transaction transaction = transactionMap.get(transactionId);
         if (Objects.nonNull(transaction)) {
-            Transaction remove = transactionMap.remove(transaction.getId());
-            Span span = remove.getSpan();
-            span.recordException(exception);
-            span.setAttribute(OplConstants.ERROR_MESSAGE.getKey(), exception.toString());
-            span.end();
-            remove.setEndTime(Instant.now());
-            return Optional.of(remove) ;
+            return Optional.of(transaction);
         }
-        return Optional.empty();
+        return searchTransaction(transactionId);
     }
 
-    private Transaction getTransaction(String transactionId) {
-        return transactionMap.get(transactionId);
+    private Optional<Transaction> searchTransaction(String transactionId) {
+        LOGGER.info("Searching Transaction - {} ", transactionId);
+        Optional<String> keyByLocation = getKeyByLocation(transactionId);
+        return keyByLocation.map(key -> {
+            Transaction transaction = transactionMap.get(key);
+            transaction.setStatusCode(StatusCode.ERROR);
+            return transaction;
+        });
+    }
+
+    private Optional<String> getKeyByLocation(String transactionId) {
+        String[] strings = transactionId.split(ID_BRIDGE);
+        return transactionMap.keySet().stream().filter(key -> key.contains(strings[0])).findAny();
     }
 
     @Override
@@ -133,13 +161,5 @@ public class TraceManager implements TracingManager {
         tracer = tracerProvider.get(configuration.getConfigName(), "1.0.0");
     }
 
-    public <T> Context getTraceContext(T carrier, TextMapGetter<T> textMapGetter) {
-        TextMapPropagator textMapPropagator = openTelemetryProvider.getContextPropagators().getTextMapPropagator();
-        return textMapPropagator.extract(Context.current(), carrier, textMapGetter);
-    }
 
-    public <T> void injectTraceContext(Context context, T carrier, TextMapSetter<T> textMapSetter) {
-        TextMapPropagator textMapPropagator = openTelemetryProvider.getContextPropagators().getTextMapPropagator();
-        textMapPropagator.inject(context, carrier, textMapSetter);
-    }
 }

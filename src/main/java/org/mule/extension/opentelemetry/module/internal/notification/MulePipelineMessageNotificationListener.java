@@ -3,7 +3,7 @@ package org.mule.extension.opentelemetry.module.internal.notification;
 import org.mule.extension.opentelemetry.module.internal.provider.TracingManager;
 import org.mule.extension.opentelemetry.module.trace.Transaction;
 import org.mule.runtime.api.component.location.ComponentLocation;
-import org.mule.runtime.api.component.location.Location;
+import org.mule.runtime.api.notification.EnrichedNotificationInfo;
 import org.mule.runtime.api.notification.PipelineMessageNotification;
 import org.mule.runtime.api.notification.PipelineMessageNotificationListener;
 import org.slf4j.Logger;
@@ -22,25 +22,25 @@ public class MulePipelineMessageNotificationListener implements PipelineMessageN
 
     @Override
     public void onNotification(PipelineMessageNotification notification) {
-        String contextId = notification.getEvent().getContext().getId();
         int action = Integer.parseInt(notification.getAction().getIdentifier());
+        String contextId = notification.getEvent().getContext().getId();
+        EnrichedNotificationInfo notificationInfo = notification.getInfo();
+        ComponentLocation componentLocation = notificationInfo.getComponent().getLocation();
         if(action == PipelineMessageNotification.PROCESS_START){
-            ComponentLocation originatingLocation = notification.getEvent().getContext().getOriginatingLocation();
-            String location = originatingLocation.getLocation();
-            Location representation = Location.builderFromStringRepresentation(location).build();
-            LOGGER.info("PROCESS_START - Flow  {} received - ContextId {} - OriginatingLocation {}",notification, contextId, originatingLocation);
+            LOGGER.trace("PROCESS_START - Flow  {} received - ContextId {} ",componentLocation, contextId);
+            tracingManager.createTransaction(contextId, componentLocation);
         }
-        if(action == PipelineMessageNotification.PROCESS_COMPLETE){
-            LOGGER.info("PROCESS_COMPLETE - Flow {} received - ContextId {}",notification, contextId);
-            Exception exception = notification.getException();
+       if(action == PipelineMessageNotification.PROCESS_COMPLETE){
+            LOGGER.trace("PROCESS_COMPLETE - Flow {} received - ContextId {}",notification, contextId);
+           Exception exception = notification.getException();
             if(Objects.nonNull(exception)){
-                Optional<Transaction> transaction = tracingManager.closeTransaction(contextId, exception);
+                Optional<Transaction> transaction = tracingManager.endTransaction(contextId,componentLocation, exception);
                 if(!transaction.isPresent()){
                     LOGGER.info("No transaction found with {}", contextId);
                 }
                 return;
             }
-            Optional<Transaction> transaction = tracingManager.closeTransaction(contextId);
+            Optional<Transaction> transaction = tracingManager.endTransaction(contextId, componentLocation);
             if(!transaction.isPresent()){
                 LOGGER.info("No transaction found with {}", contextId);
             }

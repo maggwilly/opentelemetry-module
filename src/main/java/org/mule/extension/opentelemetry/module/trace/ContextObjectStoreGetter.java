@@ -29,7 +29,7 @@ public  class ContextObjectStoreGetter implements TextMapGetter<ObjectStore<? ex
     @Nullable
     @Override
     public String get(@Nullable ObjectStore<? extends Serializable> objectStore, String key) {
-        LOGGER.info("Getting value Context - {}", key);
+        LOGGER.trace("Getting value Context - {}", key);
         String format = String.format("%s:%s", contextId, key);
         Object retrieve = retrieve(objectStore, format);
         return Objects.nonNull(retrieve) ? retrieve.toString() : null;

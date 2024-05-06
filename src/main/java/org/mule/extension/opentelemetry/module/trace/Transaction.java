@@ -1,24 +1,20 @@
 package org.mule.extension.opentelemetry.module.trace;
 
 import io.opentelemetry.api.trace.Span;
-
+import io.opentelemetry.api.trace.SpanBuilder;
+import io.opentelemetry.api.trace.StatusCode;
 
 import java.io.Serializable;
-import java.time.Instant;
 
 public class Transaction implements Serializable {
     private final String id;
-    private final Span span;
-    private final String traceId;
-    private final Instant startTime;
-    private Instant endTime;
+    private  Span span;
+    private StatusCode statusCode = StatusCode.UNSET;
+    private final SpanBuilder spanBuilder;
 
-
-    public Transaction(String id, Span span, String traceId, Instant startTime) {
+    public Transaction(String id,  SpanBuilder spanBuilder) {
         this.id = id;
-        this.span = span;
-        this.traceId = traceId;
-        this.startTime = startTime;
+        this.spanBuilder = spanBuilder;
     }
 
     public String getId() {
@@ -29,21 +25,22 @@ public class Transaction implements Serializable {
         return span;
     }
 
-    public String getTraceId() {
-        return traceId;
+    public StatusCode getStatusCode() {
+        return statusCode;
     }
 
-    public Instant getStartTime() {
-        return startTime;
-    }
-
-    public Instant getEndTime() {
-        return endTime;
-    }
-
-    public Transaction setEndTime(Instant endTime) {
-        this.endTime = endTime;
+    public Transaction setStatusCode(StatusCode statusCode) {
+        this.statusCode = statusCode;
         return this;
+    }
+
+    public Transaction setSpan(Span span) {
+        this.span = span;
+        return this;
+    }
+
+    public SpanBuilder getSpanBuilder() {
+        return spanBuilder;
     }
 
     @Override
@@ -51,9 +48,6 @@ public class Transaction implements Serializable {
         return "Transaction{" +
                 "id='" + id + '\'' +
                 ", span=" + span +
-                ", traceId='" + traceId + '\'' +
-                ", startTime=" + startTime +
-                ", endTime=" + endTime +
                 '}';
     }
 }

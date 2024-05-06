@@ -12,4 +12,13 @@ public class OplUtils {
 		// We remove time part to get a unique id across the event processing.
 		return event.getContext().getId().split("_")[0];
 	}
+
+	public static String getParentTransactionId(String eventId) {
+		int lastIndex = eventId.lastIndexOf('_');
+		if (lastIndex != -1) {
+			return eventId.substring(0, lastIndex);
+		} else {
+			return eventId;
+		}
+	}
 }

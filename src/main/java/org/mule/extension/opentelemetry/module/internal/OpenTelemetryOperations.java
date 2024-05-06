@@ -9,10 +9,13 @@ import org.mule.extension.opentelemetry.module.trace.SpanWrapper;
 import org.mule.runtime.api.component.location.ComponentLocation;
 import org.mule.runtime.api.meta.model.operation.ExecutionType;
 import org.mule.runtime.api.store.ObjectStoreManager;
-import org.mule.runtime.extension.api.annotation.Expression;
-import org.mule.runtime.extension.api.annotation.dsl.xml.ParameterDsl;
+import org.mule.runtime.api.util.MultiMap;
 import org.mule.runtime.extension.api.annotation.execution.Execution;
-import org.mule.runtime.extension.api.annotation.param.*;
+import org.mule.runtime.extension.api.annotation.param.Content;
+import org.mule.runtime.extension.api.annotation.param.MediaType;
+import org.mule.runtime.extension.api.annotation.param.Optional;
+import org.mule.runtime.extension.api.annotation.param.ParameterGroup;
+import org.mule.runtime.extension.api.annotation.param.display.DisplayName;
 import org.mule.runtime.extension.api.runtime.parameter.CorrelationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,7 +23,6 @@ import org.slf4j.LoggerFactory;
 import javax.inject.Inject;
 import java.util.Map;
 
-import static org.mule.runtime.api.meta.ExpressionSupport.NOT_SUPPORTED;
 import static org.mule.runtime.extension.api.annotation.param.MediaType.ANY;
 
 public class OpenTelemetryOperations {
@@ -41,26 +43,29 @@ public class OpenTelemetryOperations {
         metricCollector.observe(values, duration);
     }
 
+    @Execution(ExecutionType.CPU_LITE)
+    @MediaType(value = ANY, strict = false)
+    public void createInContext(@Optional SpanContextHolder parent,
+                                @Content @Optional @DisplayName("Attributes") MultiMap<String, String> tags,
+                                CorrelationInfo correlationInfo, ComponentLocation componentLocation) {
+        FlowSpan span = new FlowSpan().setName(componentLocation.getRootContainerName()).setAttributes(tags).setContextId(correlationInfo.getEventId());
+        SpanWrapper trace = getSpan(span, correlationInfo, componentLocation);
+        tracingManager.startTransaction(parent, trace);
+    }
 
     @Execution(ExecutionType.CPU_LITE)
     @MediaType(value = ANY, strict = false)
-    public void createSpan(@ParameterGroup(name = "Span") FlowSpan span,
-                           @Optional SpanContextHolder parent,
-                           @Expression(value = NOT_SUPPORTED) @ParameterDsl(allowInlineDefinition = false) @Config OpenTelemetryConfiguration configuration,
-                           CorrelationInfo correlationInfo, ComponentLocation componentLocation) {
-        SpanWrapper trace = getSpan(span, parent, correlationInfo, componentLocation);
-        tracingManager.openTransaction(trace, configuration.getTracingConfig());
+    public void createSpan(@ParameterGroup(name = "Span") FlowSpan span,CorrelationInfo correlationInfo, ComponentLocation componentLocation) {
+        SpanWrapper trace = getSpan(span, correlationInfo, componentLocation);
+        tracingManager.startTransaction(trace);
     }
 
-    private SpanWrapper getSpan(FlowSpan span, SpanContextHolder parent, CorrelationInfo correlationInfo, ComponentLocation componentLocation) {
+    private SpanWrapper getSpan(FlowSpan span, CorrelationInfo correlationInfo, ComponentLocation componentLocation) {
         LOGGER.info("Event Id {}", correlationInfo.getEventId());
         return new SpanWrapper(span)
                 .setComponentLocation(componentLocation)
-                .setContextHolder(parent)
-                .setTransactionId(correlationInfo.getEventId())
-                .setTags(span.getAttributes())
+                .setEventId(correlationInfo.getEventId())
                 .setSpanKind(SpanKind.SERVER);
     }
-
 
 }

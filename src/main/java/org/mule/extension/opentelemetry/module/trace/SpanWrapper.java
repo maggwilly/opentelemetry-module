@@ -2,47 +2,36 @@ package org.mule.extension.opentelemetry.module.trace;
 
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.StatusCode;
-import org.mule.extension.opentelemetry.module.api.SpanContextHolder;
 import org.mule.runtime.api.component.location.ComponentLocation;
 
 
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.Map;
 
 public class SpanWrapper {
-    private String transactionId;
-    private Map<String, String> tags;
+    private String eventId;
     private SpanKind spanKind;
     private String errorMessage;
     private StatusCode statusCode;
     private ComponentLocation componentLocation;
-    private Instant startTime = Instant.now();
-    private Instant endTime;
-    private FlowSpan span;
 
-    private SpanContextHolder contextHolder;
+    private FlowSpan span;
 
     public SpanWrapper(FlowSpan span) {
         this.span = span;
     }
 
-    public String getTransactionId() {
-        return transactionId;
+    public String getEventId() {
+        return eventId;
     }
 
-    public SpanWrapper setTransactionId(String transactionId) {
-        this.transactionId = transactionId;
+    public SpanWrapper setEventId(String eventId) {
+        this.eventId = eventId;
         return this;
     }
 
-    public Map<String, String> getTags() {
-        return tags;
-    }
 
-    public SpanWrapper setTags(Map<String, String> tags) {
-        this.tags = tags;
-        return this;
-    }
 
     public ComponentLocation getComponentLocation() {
         return componentLocation;
@@ -62,14 +51,6 @@ public class SpanWrapper {
         return this;
     }
 
-    public SpanContextHolder getContextHolder() {
-        return contextHolder;
-    }
-
-    public SpanWrapper setContextHolder(SpanContextHolder contextHolder) {
-        this.contextHolder = contextHolder;
-        return this;
-    }
 
     public String getErrorMessage() {
         return errorMessage;
@@ -89,23 +70,6 @@ public class SpanWrapper {
         return this;
     }
 
-    public Instant getStartTime() {
-        return startTime;
-    }
-
-    public SpanWrapper setStartTime(Instant startTime) {
-        this.startTime = startTime;
-        return this;
-    }
-
-    public Instant getEndTime() {
-        return endTime;
-    }
-
-    public SpanWrapper setEndTime(Instant endTime) {
-        this.endTime = endTime;
-        return this;
-    }
 
     public FlowSpan getSpan() {
         return span;
@@ -119,14 +83,11 @@ public class SpanWrapper {
     @Override
     public String toString() {
         return "Span {" +
-                "transactionId='" + transactionId + '\'' +
-                ", tags=" + tags +
+                "eventId='" + eventId + '\'' +
                 ", spanKind=" + spanKind +
                 ", errorMessage='" + errorMessage + '\'' +
                 ", statusCode=" + statusCode +
                 ", componentLocation=" + componentLocation +
-                ", startTime=" + startTime +
-                ", endTime=" + endTime +
                 ", span=" + span +
                 '}';
     }

@@ -20,7 +20,7 @@ public  class ContextObjectStoreSetter implements TextMapSetter<ObjectStore<Seri
 
     @Override
     public void set(@Nullable ObjectStore<Serializable> objectStore, String key, String value) {
-        LOGGER.info("Setting value - {}- {}", key, value);
+        LOGGER.trace("Setting value - {}- {}", key, value);
         String format = String.format("%s:%s", contextId, key);
         try {
             objectStore.store(format, value);

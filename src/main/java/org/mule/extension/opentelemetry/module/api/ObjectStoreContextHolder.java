@@ -1,9 +1,13 @@
 package org.mule.extension.opentelemetry.module.api;
 
+import org.mule.runtime.api.meta.ExpressionSupport;
+import org.mule.runtime.api.store.ObjectStore;
+import org.mule.runtime.extension.api.annotation.Expression;
 import org.mule.runtime.extension.api.annotation.dsl.xml.TypeDsl;
 import org.mule.runtime.extension.api.annotation.param.Parameter;
 import org.mule.runtime.extension.api.annotation.param.display.DisplayName;
 import org.mule.runtime.extension.api.annotation.param.display.Summary;
+import org.mule.runtime.extension.api.annotation.param.reference.ObjectStoreReference;
 
 import java.util.Objects;
 
@@ -14,6 +18,11 @@ public class ObjectStoreContextHolder implements SpanContextHolder {
     @Summary("The ID identifying the span context in the object store")
     private String contextId;
 
+    @Parameter
+    @ObjectStoreReference
+    @Expression(ExpressionSupport.NOT_SUPPORTED)
+    private ObjectStore objectStore;
+
     public String getContextId() {
         return contextId;
     }
@@ -23,6 +32,14 @@ public class ObjectStoreContextHolder implements SpanContextHolder {
         return this;
     }
 
+    public ObjectStore getObjectStore() {
+        return objectStore;
+    }
+
+    public ObjectStoreContextHolder setObjectStore(ObjectStore objectStore) {
+        this.objectStore = objectStore;
+        return this;
+    }
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
