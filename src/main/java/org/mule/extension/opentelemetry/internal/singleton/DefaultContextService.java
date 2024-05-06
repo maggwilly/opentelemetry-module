@@ -36,21 +36,21 @@ public class DefaultContextService implements ContextService {
     @Override
     public void store(ObjectStore<Serializable> objectStore, Context context, String contextId) {
         if (Objects.nonNull(objectStore) && Objects.nonNull(contextId)) {
-            LOGGER.info("Storing  Context - for {}", contextId);
+            LOGGER.trace("Storing  Context - for {}", contextId);
             ContextObjectStoreSetter contextObjectStoreSetter = new ContextObjectStoreSetter(contextId);
             this.injectTraceContext(context, objectStore, contextObjectStoreSetter);
         }
     }
 
     public Context retrieveLocally(String transactionId) {
-        LOGGER.info("Retrieving  Context - {}", transactionId);
+        LOGGER.trace("Retrieving  Context - {}", transactionId);
         ObjectStore<Serializable> defaultPartition = objectStoreManager.getDefaultPartition();
         ContextObjectStoreGetter textMapGetter = new ContextObjectStoreGetter(transactionId);
         return getTraceContext(defaultPartition, textMapGetter);
     }
 
     public Context extractContext(SpanContextHolder contextHolder) {
-        LOGGER.info("Getting  context from  {}", contextHolder);
+        LOGGER.trace("Getting  context from  {}", contextHolder);
         if (Objects.nonNull(contextHolder)) {
             if (contextHolder instanceof TextMapContextHolder) {
                 Map<String, String> stringMap = ((TextMapContextHolder) contextHolder).getValue();

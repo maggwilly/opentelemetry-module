@@ -1,6 +1,11 @@
 package org.mule.extension.opentelemetry.util;
 
+import io.opentelemetry.api.trace.SpanKind;
+import org.mule.extension.opentelemetry.trace.FlowSpan;
+import org.mule.extension.opentelemetry.trace.SpanWrapper;
+import org.mule.runtime.api.component.location.ComponentLocation;
 import org.mule.runtime.api.event.Event;
+import org.mule.runtime.extension.api.runtime.parameter.CorrelationInfo;
 
 public class OplUtils {
 
@@ -20,5 +25,12 @@ public class OplUtils {
 		} else {
 			return eventId;
 		}
+	}
+
+	public static SpanWrapper createSpan(FlowSpan span, String eventId, ComponentLocation componentLocation) {
+		return new SpanWrapper(span)
+				.setComponentLocation(componentLocation)
+				.setEventId(eventId)
+				.setSpanKind(SpanKind.SERVER);
 	}
 }

@@ -1,4 +1,4 @@
-package org.mule.extension.opentelemetry.internal.notification;
+package org.mule.extension.opentelemetry.internal.interceptor;
 
 import org.mule.extension.opentelemetry.internal.singleton.ContextService;
 import org.mule.runtime.api.component.ComponentIdentifier;
@@ -11,20 +11,19 @@ import org.slf4j.LoggerFactory;
 import javax.inject.Inject;
 import java.util.Arrays;
 
-public class MessageProcessorTracingInterceptorFactory implements ProcessorInterceptorFactory {
-    private static final Logger LOGGER = LoggerFactory.getLogger(MessageProcessorTracingInterceptorFactory.class);
-
+public class DefaultProcessorInterceptorFactory implements ProcessorInterceptorFactory {
+    private static final Logger LOGGER = LoggerFactory.getLogger(DefaultProcessorInterceptorFactory.class);
     public static final String[] OPL_COMPONENTS = new String[] {"opl:create-span","opl:create-span"};
-    private final ProcessorTracingInterceptor processorTracingInterceptor;
+    private final DefaultProcessorInterceptor processorTracingInterceptor;
     @Inject
-    public MessageProcessorTracingInterceptorFactory(ContextService contextService) {
-        this.processorTracingInterceptor = new ProcessorTracingInterceptor(contextService);
+    public DefaultProcessorInterceptorFactory(ContextService contextService) {
+        this.processorTracingInterceptor = new DefaultProcessorInterceptor(contextService);
     }
 
     @Override
     public boolean intercept(ComponentLocation location) {
         ComponentIdentifier identifier = location.getComponentIdentifier().getIdentifier();
-        LOGGER.info("intercept  - {}, identifier {}, namespace={}", location, identifier, identifier.getNamespace());
+        LOGGER.trace("intercept  - {}, identifier {}, namespace={}", location, identifier, identifier.getNamespace());
         return Arrays.stream(OPL_COMPONENTS).anyMatch(s -> s.equals(getName(identifier)));
     }
 

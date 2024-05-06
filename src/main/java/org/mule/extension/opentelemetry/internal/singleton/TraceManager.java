@@ -41,7 +41,7 @@ public class TraceManager implements TracingManager {
 
     @Override
     public void startTransaction(SpanContextHolder source, SpanWrapper trace) {
-        LOGGER.trace("Setting context from   {}", source);
+        LOGGER.info("Setting context from   {}", source);
         // extract and store parent context
         Context context = contextService.extractContext(source);
         String parentTransactionId = OplUtils.getParentTransactionId(trace.getEventId());
@@ -63,14 +63,14 @@ public class TraceManager implements TracingManager {
             contextService.storeLocally(transactionContext.getContext(), trace.getEventId());
 
             ObjectStore objectStore = flowSpan.getPropagator();
-            contextService.store(objectStore,transactionContext.getContext(),flowSpan.getContextId());
+            contextService.store(objectStore, transactionContext.getContext(), flowSpan.getContextId());
         });
     }
 
     @Override
     public void createTransaction(String eventId, ComponentLocation componentLocation) {
         String transactionId = createTransactionId(eventId, componentLocation);
-        LOGGER.trace("Opening  Transaction  - {}", transactionId);
+        LOGGER.info("Opening  Transaction  - {}", transactionId);
         SpanBuilder spanBuilder = createSpanBuilder(componentLocation);
         Transaction transaction = new Transaction(transactionId, spanBuilder);
         saveTransaction(transaction);
@@ -95,12 +95,22 @@ public class TraceManager implements TracingManager {
     }
 
     private void updateTransaction(Transaction transaction, Context context, FlowSpan flowSpan) {
+        if (Objects.nonNull(transaction.getSpan())) {
+            Span span = transaction.getSpan();
+            MultiMap<String, String> attributes = flowSpan.getAttributes();
+            attributes.forEach(span::setAttribute);
+            if (Objects.nonNull(flowSpan.getName())) {
+                span.updateName(flowSpan.getName());
+            }
+            this.saveTransaction(transaction);
+            return;
+        }
         SpanBuilder spanBuilder = transaction.getSpanBuilder().setParent(context);
         MultiMap<String, String> attributes = flowSpan.getAttributes();
         attributes.forEach(spanBuilder::setAttribute);
         Span startSpan = spanBuilder.startSpan();
         LOGGER.trace("Creating  Span  - {} - started", startSpan);
-        if(Objects.nonNull(flowSpan.getName())) {
+        if (Objects.nonNull(flowSpan.getName())) {
             startSpan.updateName(flowSpan.getName());
         }
         this.saveTransaction(transaction.setSpan(startSpan));
@@ -110,7 +120,7 @@ public class TraceManager implements TracingManager {
     @Override
     public Optional<Transaction> endTransaction(String eventId, ComponentLocation componentLocation) {
         String transactionId = createTransactionId(eventId, componentLocation);
-        LOGGER.info("Ending transaction - {}", transactionId);
+        LOGGER.trace("Ending transaction - {}", transactionId);
         return getTransaction(transactionId).map(transaction -> {
             Transaction remove = transactionMap.remove(transaction.getId());
             Span span = remove.getSpan();
@@ -149,7 +159,7 @@ public class TraceManager implements TracingManager {
     }
 
     private Optional<Transaction> searchTransaction(String transactionId) {
-        LOGGER.info("Searching Transaction - {} ", transactionId);
+        LOGGER.trace("Searching Transaction - {} ", transactionId);
         Optional<String> keyByLocation = getKeyByLocation(transactionId);
         return keyByLocation.map(key -> {
             Transaction transaction = transactionMap.get(key);

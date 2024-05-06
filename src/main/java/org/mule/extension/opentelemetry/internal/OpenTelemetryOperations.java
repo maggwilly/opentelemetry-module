@@ -6,6 +6,7 @@ import org.mule.extension.opentelemetry.internal.provider.TracingManager;
 import org.mule.extension.opentelemetry.internal.singleton.MetricCollector;
 import org.mule.extension.opentelemetry.trace.FlowSpan;
 import org.mule.extension.opentelemetry.trace.SpanWrapper;
+import org.mule.extension.opentelemetry.util.OplUtils;
 import org.mule.runtime.api.component.location.ComponentLocation;
 import org.mule.runtime.api.meta.model.operation.ExecutionType;
 import org.mule.runtime.api.store.ObjectStoreManager;
@@ -49,23 +50,17 @@ public class OpenTelemetryOperations {
                                 @Content @Optional @DisplayName("Attributes") MultiMap<String, String> tags,
                                 CorrelationInfo correlationInfo, ComponentLocation componentLocation) {
         FlowSpan span = new FlowSpan().setName(componentLocation.getRootContainerName()).setAttributes(tags).setContextId(correlationInfo.getEventId());
-        SpanWrapper trace = getSpan(span, correlationInfo, componentLocation);
+        SpanWrapper trace = OplUtils.createSpan(span, correlationInfo.getEventId(), componentLocation);
         tracingManager.startTransaction(parent, trace);
     }
 
     @Execution(ExecutionType.CPU_LITE)
     @MediaType(value = ANY, strict = false)
     public void createSpan(@ParameterGroup(name = "Span") FlowSpan span,CorrelationInfo correlationInfo, ComponentLocation componentLocation) {
-        SpanWrapper trace = getSpan(span, correlationInfo, componentLocation);
+        SpanWrapper trace = OplUtils.createSpan(span, correlationInfo.getEventId(), componentLocation);
         tracingManager.startTransaction(trace);
     }
 
-    private SpanWrapper getSpan(FlowSpan span, CorrelationInfo correlationInfo, ComponentLocation componentLocation) {
-        LOGGER.info("Event Id {}", correlationInfo.getEventId());
-        return new SpanWrapper(span)
-                .setComponentLocation(componentLocation)
-                .setEventId(correlationInfo.getEventId())
-                .setSpanKind(SpanKind.SERVER);
-    }
+
 
 }

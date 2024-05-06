@@ -25,7 +25,7 @@ public  class ContextObjectStoreSetter implements TextMapSetter<ObjectStore<Seri
         try {
             objectStore.store(format, value);
         } catch (ObjectStoreException e) {
-            LOGGER.error("{}",e.getMessage());
+            LOGGER.warn("{}",e.getMessage());
         }
     }
 }

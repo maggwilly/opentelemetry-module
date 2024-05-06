@@ -36,13 +36,13 @@ public class MulePipelineMessageNotificationListener implements PipelineMessageN
             if(Objects.nonNull(exception)){
                 Optional<Transaction> transaction = tracingManager.endTransaction(contextId,componentLocation, exception);
                 if(!transaction.isPresent()){
-                    LOGGER.info("No transaction found with {}", contextId);
+                    LOGGER.warn("No transaction found with {}", contextId);
                 }
                 return;
             }
             Optional<Transaction> transaction = tracingManager.endTransaction(contextId, componentLocation);
             if(!transaction.isPresent()){
-                LOGGER.info("No transaction found with {}", contextId);
+                LOGGER.warn("No transaction found with {}", contextId);
             }
         }
     }

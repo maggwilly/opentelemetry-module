@@ -1,4 +1,4 @@
-package org.mule.extension.opentelemetry.internal.notification;
+package org.mule.extension.opentelemetry.internal.interceptor;
 
 import io.opentelemetry.context.Context;
 import org.mule.extension.opentelemetry.internal.singleton.ContextService;
@@ -16,18 +16,17 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-public class ProcessorTracingInterceptor  implements ProcessorInterceptor {
-    private static final Logger LOGGER = LoggerFactory.getLogger(ProcessorTracingInterceptor.class);
-
+public class DefaultProcessorInterceptor implements ProcessorInterceptor {
+    private static final Logger LOGGER = LoggerFactory.getLogger(DefaultProcessorInterceptor.class);
     private final ContextService contextService;
 
-    public ProcessorTracingInterceptor(ContextService contextService) {
+    public DefaultProcessorInterceptor(ContextService contextService) {
         this.contextService = contextService;
     }
 
     public void after(ComponentLocation location, InterceptionEvent event, Optional<Throwable> thrown) {
         ComponentIdentifier identifier = location.getComponentIdentifier().getIdentifier();
-        LOGGER.info("After Interception - {}, identifier {}, namespace={}", location, identifier.getName(), identifier.getNamespace());
+        LOGGER.trace("After Interception - {}, identifier {}, namespace={}", location, identifier.getName(), identifier.getNamespace());
         Context currentContext = contextService.retrieveLocally(event.getContext().getId());
         Map<String,String> carrier = new HashMap<>();
         contextService.injectTraceContext(currentContext, carrier, ContextMapSetter.INSTANCE);
