@@ -1,6 +1,5 @@
 package org.mule.extension.opentelemetry.internal;
 
-import org.mule.extension.http.api.request.authentication.HttpRequestAuthentication;
 import org.mule.extension.opentelemetry.api.ObjectStoreContextHolder;
 import org.mule.extension.opentelemetry.api.SpanContextHolder;
 import org.mule.extension.opentelemetry.api.TextMapContextHolder;
@@ -25,7 +24,6 @@ import org.mule.runtime.extension.api.annotation.dsl.xml.Xml;
  */
 @Xml(prefix = "opl")
 @Extension(name = "Opentelemetry")
-@Import(type = HttpRequestAuthentication.class)
 @Import(type = ObjectStore.class)
 @Configurations(OpenTelemetryConfiguration.class)
 @SubTypeMapping(baseType = MetricExporter.class,
