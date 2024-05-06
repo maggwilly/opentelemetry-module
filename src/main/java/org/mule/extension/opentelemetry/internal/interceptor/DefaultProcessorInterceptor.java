@@ -9,6 +9,7 @@ import org.mule.runtime.api.component.ComponentIdentifier;
 import org.mule.runtime.api.component.location.ComponentLocation;
 import org.mule.runtime.api.interception.InterceptionEvent;
 import org.mule.runtime.api.interception.ProcessorInterceptor;
+import org.mule.runtime.api.interception.ProcessorParameterValue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,5 +32,11 @@ public class DefaultProcessorInterceptor implements ProcessorInterceptor {
         Map<String,String> carrier = new HashMap<>();
         contextService.injectTraceContext(currentContext, carrier, ContextMapSetter.INSTANCE);
         event.addVariable(OplConstants.TRACE_CONTEXT_MAP_KEY,carrier);
+    }
+
+    @Override
+    public void before(ComponentLocation location, Map<String, ProcessorParameterValue> parameters, InterceptionEvent event) {
+        ComponentIdentifier identifier = location.getComponentIdentifier().getIdentifier();
+        LOGGER.trace("before Interception - {}, identifier {}, namespace={}", location, identifier.getName(), identifier.getNamespace());
     }
 }
