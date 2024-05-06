@@ -8,9 +8,9 @@ import org.mule.extension.opentelemetry.module.internal.provider.metric.LoggingM
 import org.mule.extension.opentelemetry.module.internal.provider.metric.MetricExporter;
 import org.mule.extension.opentelemetry.module.internal.provider.metric.OtlpGrpcMetricExporter;
 import org.mule.extension.opentelemetry.module.internal.provider.metric.PrometheusMetricExporter;
-import org.mule.extension.opentelemetry.module.internal.provider.span.LoggingSpanExporter;
-import org.mule.extension.opentelemetry.module.internal.provider.span.OtlpGrpcSpanExporter;
-import org.mule.extension.opentelemetry.module.internal.provider.span.SpanExporter;
+import org.mule.extension.opentelemetry.module.internal.provider.span.LoggingTraceExporter;
+import org.mule.extension.opentelemetry.module.internal.provider.span.OtlpGrpcTraceExporter;
+import org.mule.extension.opentelemetry.module.internal.provider.span.TraceExporter;
 import org.mule.runtime.api.store.ObjectStore;
 import org.mule.runtime.extension.api.annotation.Configurations;
 import org.mule.runtime.extension.api.annotation.Extension;
@@ -30,8 +30,8 @@ import org.mule.runtime.extension.api.annotation.dsl.xml.Xml;
 @Configurations(OpenTelemetryConfiguration.class)
 @SubTypeMapping(baseType = MetricExporter.class,
 subTypes = {LoggingMetricExporter.class, OtlpGrpcMetricExporter.class, PrometheusMetricExporter.class })
-@SubTypeMapping(baseType = SpanExporter.class,
-        subTypes = {OtlpGrpcSpanExporter.class, LoggingSpanExporter.class })
+@SubTypeMapping(baseType = TraceExporter.class,
+        subTypes = {OtlpGrpcTraceExporter.class, LoggingTraceExporter.class })
 @SubTypeMapping(baseType = SpanContextHolder.class, subTypes = {TextMapContextHolder.class, ObjectStoreContextHolder.class})
 public class OpenTelemetryExtension {
 

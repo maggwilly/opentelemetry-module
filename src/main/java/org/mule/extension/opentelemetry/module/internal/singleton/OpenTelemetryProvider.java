@@ -18,7 +18,7 @@ import org.mule.extension.opentelemetry.module.internal.OpenTelemetryConfigurati
 import org.mule.extension.opentelemetry.module.internal.OplInitialisable;
 import org.mule.extension.opentelemetry.module.internal.config.TracingConfig;
 import org.mule.extension.opentelemetry.module.internal.provider.metric.MetricExporter;
-import org.mule.extension.opentelemetry.module.internal.provider.span.SpanExporter;
+import org.mule.extension.opentelemetry.module.internal.provider.span.TraceExporter;
 import org.mule.extension.opentelemetry.module.utils.OplUtils;
 
 public class OpenTelemetryProvider implements OplInitialisable {
@@ -59,13 +59,13 @@ public class OpenTelemetryProvider implements OplInitialisable {
         String histogramName = OplUtils.createHistogramName(configuration.getServiceName());
         InstrumentSelector selector = InstrumentSelector.builder().setType(InstrumentType.HISTOGRAM).setName(histogramName).build();
         View view = View.builder().setAggregation(Aggregation.base2ExponentialBucketHistogram()).build();
-        MetricExporter metricExporter = configuration.getMetricConfig().getExporter();
+        MetricExporter metricExporter = configuration.getMetricConfig().getMetricExporter();
         return metricExporter.createMeterProviderBuilder().registerView(selector, view).setResource(resource).build();
     }
 
     private SdkTracerProvider createTracerProvider(Resource resource, OpenTelemetryConfiguration configuration) {
         TracingConfig tracingConfig = configuration.getTracingConfig();
-        SpanExporter exporter = tracingConfig.getExporter();
+        TraceExporter exporter = tracingConfig.getTraceExporter();
         return exporter.createSdkTracerProviderBuilder(meterProvider).setResource(resource).build();
     }
 

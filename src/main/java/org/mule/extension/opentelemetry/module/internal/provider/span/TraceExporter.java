@@ -4,6 +4,6 @@ import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;
 import org.mule.extension.opentelemetry.module.internal.ExporterInitialisationException;
 
-public interface SpanExporter {
+public interface TraceExporter {
 	SdkTracerProviderBuilder createSdkTracerProviderBuilder(SdkMeterProvider meterProvider) throws ExporterInitialisationException;
 }

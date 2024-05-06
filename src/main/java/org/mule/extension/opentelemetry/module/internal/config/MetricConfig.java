@@ -8,14 +8,14 @@ import org.mule.runtime.extension.api.annotation.param.Parameter;
 public class MetricConfig {
     @Parameter
     @Expression(ExpressionSupport.NOT_SUPPORTED)
-    private MetricExporter exporter;
+    private MetricExporter metricExporter;
 
-    public MetricExporter getExporter() {
-        return exporter;
+    public MetricExporter getMetricExporter() {
+        return metricExporter;
     }
 
 
-    public void setExporter(MetricExporter exporter) {
-        this.exporter = exporter;
+    public void setMetricExporter(MetricExporter metricExporter) {
+        this.metricExporter = metricExporter;
     }
 }

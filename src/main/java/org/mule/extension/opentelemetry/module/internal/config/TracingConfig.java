@@ -1,6 +1,6 @@
 package org.mule.extension.opentelemetry.module.internal.config;
 
-import org.mule.extension.opentelemetry.module.internal.provider.span.SpanExporter;
+import org.mule.extension.opentelemetry.module.internal.provider.span.TraceExporter;
 import org.mule.runtime.api.meta.ExpressionSupport;
 import org.mule.runtime.api.store.ObjectStore;
 import org.mule.runtime.extension.api.annotation.Expression;
@@ -10,7 +10,7 @@ import org.mule.runtime.extension.api.annotation.param.reference.ObjectStoreRefe
 public class TracingConfig {
     @Parameter
     @Expression(ExpressionSupport.NOT_SUPPORTED)
-    private SpanExporter exporter;
+    private TraceExporter traceExporter;
     @Parameter
     @ObjectStoreReference
     @Expression(ExpressionSupport.NOT_SUPPORTED)
@@ -25,12 +25,12 @@ public class TracingConfig {
         return this;
     }
 
-    public SpanExporter getExporter() {
-        return exporter;
+    public TraceExporter getTraceExporter() {
+        return traceExporter;
     }
 
-    public TracingConfig setExporter(SpanExporter exporter) {
-        this.exporter = exporter;
+    public TracingConfig setTraceExporter(TraceExporter traceExporter) {
+        this.traceExporter = traceExporter;
         return this;
     }
 }

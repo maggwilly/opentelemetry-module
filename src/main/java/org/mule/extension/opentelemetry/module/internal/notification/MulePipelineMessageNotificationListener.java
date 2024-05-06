@@ -2,6 +2,8 @@ package org.mule.extension.opentelemetry.module.internal.notification;
 
 import org.mule.extension.opentelemetry.module.internal.provider.TracingManager;
 import org.mule.extension.opentelemetry.module.trace.Transaction;
+import org.mule.runtime.api.component.location.ComponentLocation;
+import org.mule.runtime.api.component.location.Location;
 import org.mule.runtime.api.notification.PipelineMessageNotification;
 import org.mule.runtime.api.notification.PipelineMessageNotificationListener;
 import org.slf4j.Logger;
@@ -23,7 +25,10 @@ public class MulePipelineMessageNotificationListener implements PipelineMessageN
         String contextId = notification.getEvent().getContext().getId();
         int action = Integer.parseInt(notification.getAction().getIdentifier());
         if(action == PipelineMessageNotification.PROCESS_START){
-            LOGGER.info("PROCESS_START - Flow  received - ContextId {}", contextId);
+            ComponentLocation originatingLocation = notification.getEvent().getContext().getOriginatingLocation();
+            String location = originatingLocation.getLocation();
+            Location representation = Location.builderFromStringRepresentation(location).build();
+            LOGGER.info("PROCESS_START - Flow  {} received - ContextId {} - OriginatingLocation {}",notification, contextId, originatingLocation);
         }
         if(action == PipelineMessageNotification.PROCESS_COMPLETE){
             LOGGER.info("PROCESS_COMPLETE - Flow {} received - ContextId {}",notification, contextId);

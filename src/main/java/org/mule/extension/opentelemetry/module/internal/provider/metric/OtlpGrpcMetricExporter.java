@@ -3,10 +3,14 @@ package org.mule.extension.opentelemetry.module.internal.provider.metric;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
+import org.mule.runtime.api.meta.ExpressionSupport;
+import org.mule.runtime.api.tls.TlsContextFactory;
+import org.mule.runtime.extension.api.annotation.Expression;
 import org.mule.runtime.extension.api.annotation.dsl.xml.TypeDsl;
 import org.mule.runtime.extension.api.annotation.param.Content;
 import org.mule.runtime.extension.api.annotation.param.Optional;
 import org.mule.runtime.extension.api.annotation.param.Parameter;
+import org.mule.runtime.extension.api.annotation.param.display.DisplayName;
 
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -18,7 +22,11 @@ public class OtlpGrpcMetricExporter implements MetricExporter {
      @Parameter
      @Content
      private Map<String,String> headers;
-     
+	@Parameter
+	@Optional
+	@Expression(ExpressionSupport.NOT_SUPPORTED)
+	@DisplayName("TLS Configuration")
+	private TlsContextFactory tlsContext;
 	 @Parameter
 	 @Optional(defaultValue ="5")
      private int interval;
@@ -36,4 +44,39 @@ public class OtlpGrpcMetricExporter implements MetricExporter {
 		return "OtlpGrpcMetricExporter [endPoint=" + endPoint + ", headers=" + headers + ", interval=" + interval + "]";
 	}
 
+	public String getEndPoint() {
+		return endPoint;
+	}
+
+	public OtlpGrpcMetricExporter setEndPoint(String endPoint) {
+		this.endPoint = endPoint;
+		return this;
+	}
+
+	public Map<String, String> getHeaders() {
+		return headers;
+	}
+
+	public OtlpGrpcMetricExporter setHeaders(Map<String, String> headers) {
+		this.headers = headers;
+		return this;
+	}
+
+	public TlsContextFactory getTlsContext() {
+		return tlsContext;
+	}
+
+	public OtlpGrpcMetricExporter setTlsContext(TlsContextFactory tlsContext) {
+		this.tlsContext = tlsContext;
+		return this;
+	}
+
+	public int getInterval() {
+		return interval;
+	}
+
+	public OtlpGrpcMetricExporter setInterval(int interval) {
+		this.interval = interval;
+		return this;
+	}
 }
