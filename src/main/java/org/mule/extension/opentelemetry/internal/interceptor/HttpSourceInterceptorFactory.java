@@ -7,20 +7,19 @@ import org.mule.runtime.api.interception.SourceInterceptorFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.inject.Inject;
 import java.util.Arrays;
 
-public class DefaultSourceInterceptorFactory implements SourceInterceptorFactory{
-  private static final Logger LOGGER = LoggerFactory.getLogger(DefaultSourceInterceptorFactory.class);
+public class HttpSourceInterceptorFactory implements SourceInterceptorFactory{
+  private static final Logger LOGGER = LoggerFactory.getLogger(HttpSourceInterceptorFactory.class);
   public static final String[] OPL_COMPONENTS = new String[] {"http:listener"};
-  private final DefaultSourceInterceptor sourceInterceptor;
+  private final HttpSourceInterceptor sourceInterceptor;
 
-  public DefaultSourceInterceptorFactory(OpenTelemetryConnectionHolder connectionHolder) {
-    sourceInterceptor = new DefaultSourceInterceptor(connectionHolder);
+  public HttpSourceInterceptorFactory(OpenTelemetryConnectionHolder connectionHolder) {
+    sourceInterceptor = new HttpSourceInterceptor(connectionHolder);
   }
 
   @Override
-  public DefaultSourceInterceptor get() {
+  public HttpSourceInterceptor get() {
     return sourceInterceptor;
   }
 

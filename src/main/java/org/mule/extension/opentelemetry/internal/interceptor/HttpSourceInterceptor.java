@@ -22,10 +22,10 @@ import java.util.Optional;
 
 import static io.opentelemetry.semconv.SemanticAttributes.*;
 
-public class DefaultSourceInterceptor implements SourceInterceptor {
-    private static final Logger LOGGER = LoggerFactory.getLogger(DefaultSourceInterceptor.class);
+public class HttpSourceInterceptor implements SourceInterceptor {
+    private static final Logger LOGGER = LoggerFactory.getLogger(HttpSourceInterceptor.class);
     private final ConnectionHolder<OpenTelemetryConnection> connectionHolder;
-    public DefaultSourceInterceptor(ConnectionHolder<OpenTelemetryConnection> connectionHolder) {
+    public HttpSourceInterceptor(ConnectionHolder<OpenTelemetryConnection> connectionHolder) {
         this.connectionHolder = connectionHolder;
   }
 
