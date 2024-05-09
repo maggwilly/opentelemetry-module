@@ -38,7 +38,7 @@ public class DefaultTraceCollector implements TraceCollector {
 
     @Override
     public void startTransaction(SpanContextHolder source, SpanWrapper trace) {
-        LOGGER.info("Setting context from   {}", source);
+        LOGGER.trace("Setting context from   {}", source);
         // extract and store parent context
         Context context = contextPropagator.extractContext(source);
         String parentTransactionId = OplUtils.getParentTransactionId(trace.getEventId());
@@ -67,7 +67,7 @@ public class DefaultTraceCollector implements TraceCollector {
     @Override
     public void createTransaction(String eventId, ComponentLocation componentLocation) {
         String transactionId = createTransactionId(eventId, componentLocation);
-        LOGGER.info("Opening  Transaction  - {}", transactionId);
+        LOGGER.trace("Opening  Transaction  - {}", transactionId);
         SpanBuilder spanBuilder = createSpanBuilder(componentLocation);
         Transaction transaction = new Transaction(transactionId, spanBuilder);
         saveTransaction(transaction);
@@ -132,7 +132,7 @@ public class DefaultTraceCollector implements TraceCollector {
     @Override
     public Optional<Transaction> endTransaction(String eventId, ComponentLocation componentLocation, Exception exception) {
         String transactionId = createTransactionId(eventId, componentLocation);
-        LOGGER.warn("Ending transaction - {} - error {}", transactionId, exception.getMessage());
+        LOGGER.trace("Ending transaction - {} - error {}", transactionId, exception.getMessage());
         return getTransaction(transactionId).map(transaction -> {
             Transaction remove = transactionMap.remove(transaction.getId());
             Span span = remove.getSpan();
