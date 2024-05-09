@@ -10,6 +10,7 @@ import org.mule.runtime.api.lifecycle.Initialisable;
 import org.mule.runtime.api.lifecycle.InitialisationException;
 import org.mule.runtime.api.meta.ExpressionSupport;
 import org.mule.runtime.api.tls.TlsContextFactory;
+import org.mule.runtime.api.util.MultiMap;
 import org.mule.runtime.extension.api.annotation.Expression;
 import org.mule.runtime.extension.api.annotation.param.Content;
 import org.mule.runtime.extension.api.annotation.param.Optional;
@@ -19,7 +20,6 @@ import org.mule.runtime.extension.api.annotation.param.display.DisplayName;
 import javax.net.ssl.SSLContext;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
-import java.util.Map;
 
 import static org.mule.runtime.core.api.lifecycle.LifecycleUtils.initialiseIfNeeded;
 
@@ -29,7 +29,7 @@ public class OtlpGrpcTraceExporter implements TraceExporter, Initialisable {
 
     @Parameter
     @Content
-    private Map<String,String> headers;
+    private MultiMap<String,String> headers= MultiMap.emptyMultiMap();
 
     @Parameter
     @Optional
@@ -62,11 +62,11 @@ public class OtlpGrpcTraceExporter implements TraceExporter, Initialisable {
         return this;
     }
 
-    public Map<String, String> getHeaders() {
+    public MultiMap<String, String> getHeaders() {
         return headers;
     }
 
-    public OtlpGrpcTraceExporter setHeaders(Map<String, String> headers) {
+    public OtlpGrpcTraceExporter setHeaders(MultiMap<String, String> headers) {
         this.headers = headers;
         return this;
     }

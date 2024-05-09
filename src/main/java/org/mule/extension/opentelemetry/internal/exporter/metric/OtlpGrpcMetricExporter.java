@@ -5,6 +5,7 @@ import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 import org.mule.runtime.api.meta.ExpressionSupport;
 import org.mule.runtime.api.tls.TlsContextFactory;
+import org.mule.runtime.api.util.MultiMap;
 import org.mule.runtime.extension.api.annotation.Expression;
 import org.mule.runtime.extension.api.annotation.dsl.xml.TypeDsl;
 import org.mule.runtime.extension.api.annotation.param.Content;
@@ -21,7 +22,7 @@ public class OtlpGrpcMetricExporter implements MetricExporter {
     
      @Parameter
      @Content
-     private Map<String,String> headers;
+     private MultiMap<String,String> headers= MultiMap.emptyMultiMap();
 	@Parameter
 	@Optional
 	@Expression(ExpressionSupport.NOT_SUPPORTED)
@@ -53,11 +54,11 @@ public class OtlpGrpcMetricExporter implements MetricExporter {
 		return this;
 	}
 
-	public Map<String, String> getHeaders() {
+	public MultiMap<String, String> getHeaders() {
 		return headers;
 	}
 
-	public OtlpGrpcMetricExporter setHeaders(Map<String, String> headers) {
+	public OtlpGrpcMetricExporter setHeaders(MultiMap<String, String> headers) {
 		this.headers = headers;
 		return this;
 	}
