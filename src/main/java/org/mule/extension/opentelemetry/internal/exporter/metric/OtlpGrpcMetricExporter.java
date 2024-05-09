@@ -13,7 +13,6 @@ import org.mule.runtime.extension.api.annotation.param.Optional;
 import org.mule.runtime.extension.api.annotation.param.Parameter;
 import org.mule.runtime.extension.api.annotation.param.display.DisplayName;
 
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 @TypeDsl()
 public class OtlpGrpcMetricExporter implements MetricExporter {
