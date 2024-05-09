@@ -23,7 +23,7 @@ public class MulePipelineMessageNotificationListener implements PipelineMessageN
 
     @Override
     public void onNotification(PipelineMessageNotification notification) {
-        OpenTelemetryConnection openTelemetryConnection = connectionHolder.getConnection();
+        final OpenTelemetryConnection openTelemetryConnection = connectionHolder.getConnection();
         if (Objects.nonNull(openTelemetryConnection)) {
             int action = Integer.parseInt(notification.getAction().getIdentifier());
             String contextId = notification.getEvent().getContext().getId();
