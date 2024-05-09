@@ -18,7 +18,7 @@ public class DefaultProcessorInterceptorFactory implements ProcessorInterceptorF
     private final DefaultProcessorInterceptor processorTracingInterceptor;
     @Inject
     public DefaultProcessorInterceptorFactory(@Connection OpenTelemetryConnection openTelemetryConnection) {
-        this.processorTracingInterceptor = new DefaultProcessorInterceptor(openTelemetryConnection.getContextService());
+        this.processorTracingInterceptor = new DefaultProcessorInterceptor(openTelemetryConnection.getContextPropagator());
     }
 
     @Override

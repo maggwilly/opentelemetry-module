@@ -1,8 +1,6 @@
 package org.mule.extension.opentelemetry.internal.interceptor;
 
 import org.mule.extension.opentelemetry.internal.OpenTelemetryConnection;
-import org.mule.extension.opentelemetry.internal.service.TraceCollector;
-import org.mule.extension.opentelemetry.internal.service.ContextService;
 import org.mule.runtime.api.component.ComponentIdentifier;
 import org.mule.runtime.api.component.location.ComponentLocation;
 import org.mule.runtime.api.interception.SourceInterceptorFactory;

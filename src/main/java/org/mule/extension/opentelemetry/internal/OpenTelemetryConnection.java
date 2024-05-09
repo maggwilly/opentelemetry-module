@@ -2,7 +2,7 @@ package org.mule.extension.opentelemetry.internal;
 
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.instrumentation.runtimemetrics.java8.*;
-import org.mule.extension.opentelemetry.internal.service.ContextService;
+import org.mule.extension.opentelemetry.internal.service.ContextPropagator;
 import org.mule.extension.opentelemetry.internal.service.MetricCollector;
 import org.mule.extension.opentelemetry.internal.service.TraceCollector;
 
@@ -11,13 +11,13 @@ public class OpenTelemetryConnection{
     private final TraceCollector traceCollector;
     private final  OpenTelemetry openTelemetry;
 
-    private final ContextService contextService;
+    private final ContextPropagator contextPropagator;
 
-    public OpenTelemetryConnection(OpenTelemetry openTelemetry, MetricCollector metricCollector, TraceCollector traceCollector, ContextService contextService) {
+    public OpenTelemetryConnection(OpenTelemetry openTelemetry, MetricCollector metricCollector, TraceCollector traceCollector, ContextPropagator contextPropagator) {
         this.metricCollector = metricCollector;
         this.traceCollector = traceCollector;
         this.openTelemetry = openTelemetry;
-        this.contextService = contextService;
+        this.contextPropagator = contextPropagator;
     }
 
     public void start() {
@@ -37,7 +37,7 @@ public class OpenTelemetryConnection{
         return traceCollector;
     }
 
-    public ContextService getContextService() {
-        return contextService;
+    public ContextPropagator getContextPropagator() {
+        return contextPropagator;
     }
 }

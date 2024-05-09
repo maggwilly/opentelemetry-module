@@ -8,7 +8,7 @@ import org.mule.runtime.api.store.ObjectStore;
 
 import java.io.Serializable;
 
-public interface ContextService {
+public interface ContextPropagator {
     Context extractContext(SpanContextHolder source);
 
     void storeLocally(Context extractContext, String transactionId);

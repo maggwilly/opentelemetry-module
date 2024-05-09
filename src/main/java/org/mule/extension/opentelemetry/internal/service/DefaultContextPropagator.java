@@ -8,7 +8,6 @@ import io.opentelemetry.context.propagation.TextMapSetter;
 import org.mule.extension.opentelemetry.api.ObjectStoreContextHolder;
 import org.mule.extension.opentelemetry.api.SpanContextHolder;
 import org.mule.extension.opentelemetry.api.TextMapContextHolder;
-import org.mule.extension.opentelemetry.internal.OpenTelemetryConnection;
 import org.mule.extension.opentelemetry.trace.ContextMapGetter;
 import org.mule.extension.opentelemetry.trace.ContextObjectStoreGetter;
 import org.mule.extension.opentelemetry.trace.ContextObjectStoreSetter;
@@ -17,18 +16,17 @@ import org.mule.runtime.api.store.ObjectStoreManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.inject.Inject;
 import java.io.Serializable;
 import java.util.Map;
 import java.util.Objects;
 
-public class DefaultContextService implements ContextService {
-    private static final Logger LOGGER = LoggerFactory.getLogger(DefaultContextService.class);
+public class DefaultContextPropagator implements ContextPropagator {
+    private static final Logger LOGGER = LoggerFactory.getLogger(DefaultContextPropagator.class);
     private final ObjectStoreManager objectStoreManager;
 
     private final ContextPropagators contextPropagators;
 
-    public DefaultContextService(ObjectStoreManager objectStoreManager, ContextPropagators contextPropagators) {
+    public DefaultContextPropagator(ObjectStoreManager objectStoreManager, ContextPropagators contextPropagators) {
         this.objectStoreManager = objectStoreManager;
         this.contextPropagators = contextPropagators;
     }

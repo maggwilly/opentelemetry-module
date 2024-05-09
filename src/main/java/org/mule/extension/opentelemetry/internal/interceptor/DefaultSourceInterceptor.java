@@ -4,7 +4,6 @@ import org.mule.extension.http.api.HttpRequestAttributes;
 import org.mule.extension.opentelemetry.api.SpanContextHolder;
 import org.mule.extension.opentelemetry.api.TextMapContextHolder;
 import org.mule.extension.opentelemetry.internal.service.TraceCollector;
-import org.mule.extension.opentelemetry.internal.service.ContextService;
 import org.mule.extension.opentelemetry.trace.FlowSpan;
 import org.mule.extension.opentelemetry.trace.SpanWrapper;
 import org.mule.extension.opentelemetry.util.OplUtils;

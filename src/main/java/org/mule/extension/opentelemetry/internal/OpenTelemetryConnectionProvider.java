@@ -66,11 +66,11 @@ public class OpenTelemetryConnectionProvider implements CachedConnectionProvider
         ContextPropagators contextPropagators = createContextPropagators();
         SdkTracerProvider tracerProvider = createTracerProvider(resource, meterProvider);
         SdkLoggerProvider loggerProvider = createLoggerProvider(resource);
-        ContextService contextService = new DefaultContextService(objectStoreManager, contextPropagators);
+        ContextPropagator contextPropagator = new DefaultContextPropagator(objectStoreManager, contextPropagators);
         OpenTelemetry openTelemetry = createOpenTelemetry(meterProvider, tracerProvider, loggerProvider, contextPropagators);
         MetricCollector metricCollector = new DefaultMetricCollector(configName, meterProvider);
-        TraceCollector traceCollector = new DefaultTraceCollector(configName, tracerProvider, contextService);
-        return new OpenTelemetryConnection(openTelemetry, metricCollector, traceCollector, contextService);
+        TraceCollector traceCollector = new DefaultTraceCollector(configName, tracerProvider, contextPropagator);
+        return new OpenTelemetryConnection(openTelemetry, metricCollector, traceCollector, contextPropagator);
     }
 
     @Override

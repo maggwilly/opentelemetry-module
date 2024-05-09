@@ -1,7 +1,7 @@
 package org.mule.extension.opentelemetry.internal.interceptor;
 
 import io.opentelemetry.context.Context;
-import org.mule.extension.opentelemetry.internal.service.ContextService;
+import org.mule.extension.opentelemetry.internal.service.ContextPropagator;
 
 import org.mule.extension.opentelemetry.trace.ContextMapSetter;
 import org.mule.extension.opentelemetry.util.OplConstants;
@@ -19,18 +19,18 @@ import java.util.Optional;
 
 public class DefaultProcessorInterceptor implements ProcessorInterceptor {
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultProcessorInterceptor.class);
-    private final ContextService contextService;
+    private final ContextPropagator contextPropagator;
 
-    public DefaultProcessorInterceptor(ContextService contextService) {
-        this.contextService = contextService;
+    public DefaultProcessorInterceptor(ContextPropagator contextPropagator) {
+        this.contextPropagator = contextPropagator;
     }
 
     public void after(ComponentLocation location, InterceptionEvent event, Optional<Throwable> thrown) {
         ComponentIdentifier identifier = location.getComponentIdentifier().getIdentifier();
         LOGGER.trace("After Interception - {}, identifier {}, namespace={}", location, identifier.getName(), identifier.getNamespace());
-        Context currentContext = contextService.retrieveLocally(event.getContext().getId());
+        Context currentContext = contextPropagator.retrieveLocally(event.getContext().getId());
         Map<String,String> carrier = new HashMap<>();
-        contextService.injectTraceContext(currentContext, carrier, ContextMapSetter.INSTANCE);
+        contextPropagator.injectTraceContext(currentContext, carrier, ContextMapSetter.INSTANCE);
         event.addVariable(OplConstants.TRACE_CONTEXT_MAP_KEY,carrier);
     }
 

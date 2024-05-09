@@ -28,11 +28,11 @@ public class DefaultTraceCollector implements TraceCollector {
     public static final String ID_BRIDGE = "::";
     private final Map<String, Transaction> transactionMap = new ConcurrentHashMap<>();
 
-    private final ContextService contextService;
+    private final ContextPropagator contextPropagator;
     private final Tracer tracer;
 
-    public DefaultTraceCollector(String configName, SdkTracerProvider tracerProvider, ContextService contextService) {
-        this.contextService = contextService;
+    public DefaultTraceCollector(String configName, SdkTracerProvider tracerProvider, ContextPropagator contextPropagator) {
+        this.contextPropagator = contextPropagator;
         tracer = tracerProvider.get(configName, "1.0.0");
     }
 
@@ -40,9 +40,9 @@ public class DefaultTraceCollector implements TraceCollector {
     public void startTransaction(SpanContextHolder source, SpanWrapper trace) {
         LOGGER.info("Setting context from   {}", source);
         // extract and store parent context
-        Context context = contextService.extractContext(source);
+        Context context = contextPropagator.extractContext(source);
         String parentTransactionId = OplUtils.getParentTransactionId(trace.getEventId());
-        contextService.storeLocally(context, parentTransactionId);
+        contextPropagator.storeLocally(context, parentTransactionId);
         startTransaction(trace);
     }
 
@@ -52,15 +52,15 @@ public class DefaultTraceCollector implements TraceCollector {
         String transactionId = createTransactionId(trace.getEventId(), trace.getComponentLocation());
         getTransaction(transactionId).ifPresent(transaction -> {
             String parentTransactionId = OplUtils.getParentTransactionId(trace.getEventId());
-            Context context = contextService.retrieveLocally(parentTransactionId);
+            Context context = contextPropagator.retrieveLocally(parentTransactionId);
             FlowSpan flowSpan = trace.getSpan();
 
             this.updateTransaction(transaction, context, trace.getSpan());
             TransactionContext transactionContext = TransactionContext.of(transaction);
-            contextService.storeLocally(transactionContext.getContext(), trace.getEventId());
+            contextPropagator.storeLocally(transactionContext.getContext(), trace.getEventId());
 
             ObjectStore objectStore = flowSpan.getPropagator();
-            contextService.store(objectStore, transactionContext.getContext(), flowSpan.getContextId());
+            contextPropagator.store(objectStore, transactionContext.getContext(), flowSpan.getContextId());
         });
     }
 
