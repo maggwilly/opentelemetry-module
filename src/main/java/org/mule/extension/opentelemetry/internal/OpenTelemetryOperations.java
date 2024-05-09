@@ -9,27 +9,21 @@ import org.mule.runtime.api.component.location.ComponentLocation;
 import org.mule.runtime.api.meta.model.operation.ExecutionType;
 import org.mule.runtime.api.util.MultiMap;
 import org.mule.runtime.extension.api.annotation.execution.Execution;
-import org.mule.runtime.extension.api.annotation.param.Content;
-import org.mule.runtime.extension.api.annotation.param.MediaType;
-import org.mule.runtime.extension.api.annotation.param.Optional;
-import org.mule.runtime.extension.api.annotation.param.ParameterGroup;
+import org.mule.runtime.extension.api.annotation.param.*;
 import org.mule.runtime.extension.api.annotation.param.display.DisplayName;
 import org.mule.runtime.extension.api.runtime.parameter.CorrelationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.inject.Inject;
 import java.util.Map;
 
 import static org.mule.runtime.extension.api.annotation.param.MediaType.ANY;
 
 public class OpenTelemetryOperations {
     private final Logger LOGGER = LoggerFactory.getLogger(OpenTelemetryOperations.class);
-
-    private final ConnectionHolder<OpenTelemetryConnection> connectionHolder;
-
-    public OpenTelemetryOperations(ConnectionHolder<OpenTelemetryConnection> connectionHolder) {
-        this.connectionHolder = connectionHolder;
-    }
+    @Inject
+    private  ConnectionHolder<OpenTelemetryConnection> connectionHolder;
 
     @Execution(ExecutionType.CPU_LITE)
     @MediaType(value = ANY, strict = false)
@@ -53,5 +47,6 @@ public class OpenTelemetryOperations {
         SpanWrapper trace = OplUtils.createSpan(span, correlationInfo.getEventId(), componentLocation);
         connectionHolder.getConnection().getTraceCollector().startTransaction(trace);
     }
+
 
 }
