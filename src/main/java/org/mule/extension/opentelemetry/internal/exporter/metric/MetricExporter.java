@@ -1,4 +1,4 @@
-package org.mule.extension.opentelemetry.internal.provider.metric;
+package org.mule.extension.opentelemetry.internal.exporter.metric;
 
 import org.mule.extension.opentelemetry.internal.ExporterInitialisationException;
 

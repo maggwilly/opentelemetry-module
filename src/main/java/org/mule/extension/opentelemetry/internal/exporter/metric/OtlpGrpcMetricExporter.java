@@ -1,4 +1,4 @@
-package org.mule.extension.opentelemetry.internal.provider.metric;
+package org.mule.extension.opentelemetry.internal.exporter.metric;
 
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.SdkMeterProviderBuilder;
@@ -14,7 +14,7 @@ import org.mule.runtime.extension.api.annotation.param.display.DisplayName;
 
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-@TypeDsl(allowTopLevelDefinition = false, allowInlineDefinition = true)
+@TypeDsl()
 public class OtlpGrpcMetricExporter implements MetricExporter {
 	 @Parameter
      private String endPoint;

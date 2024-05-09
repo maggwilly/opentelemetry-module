@@ -6,7 +6,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>6cde5e5e-816c-4ee5-b0ee-07655c9f5870</groupId>
 	<artifactId>opentelemetry-module</artifactId>
-	<version>1.4.2-SNAPSHOT</version>
+	<version>1.4.3-SNAPSHOT</version>
 	<packaging>mule-extension</packaging>
 	<name>opentelemetry-module</name>
     <properties>
@@ -70,11 +70,6 @@
 			<artifactId>opentelemetry-log4j-appender-2.17</artifactId>
 			<version>1.32.0-alpha</version>
 			<scope>runtime</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.fasterxml.jackson.core</groupId>
-			<artifactId>jackson-databind</artifactId>
-			<version>2.16.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mule.connectors</groupId>

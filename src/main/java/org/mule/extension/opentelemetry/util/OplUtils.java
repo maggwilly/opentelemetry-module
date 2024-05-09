@@ -4,18 +4,11 @@ import io.opentelemetry.api.trace.SpanKind;
 import org.mule.extension.opentelemetry.trace.FlowSpan;
 import org.mule.extension.opentelemetry.trace.SpanWrapper;
 import org.mule.runtime.api.component.location.ComponentLocation;
-import org.mule.runtime.api.event.Event;
-import org.mule.runtime.extension.api.runtime.parameter.CorrelationInfo;
 
 public class OplUtils {
 
 	public static String createHistogramName(String serviceName) {
-		return String.format("%s-%s",serviceName, "histogram");	
-	}
-	public static String getEventTransactionId(Event event) {
-		// For child contexts, the primary id is appended with "_{timeInMillis}".
-		// We remove time part to get a unique id across the event processing.
-		return event.getContext().getId().split("_")[0];
+		return String.format("%s-%s",serviceName, "histogram_business");
 	}
 
 	public static String getParentTransactionId(String eventId) {

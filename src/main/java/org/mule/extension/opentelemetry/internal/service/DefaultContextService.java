@@ -1,12 +1,14 @@
-package org.mule.extension.opentelemetry.internal.singleton;
+package org.mule.extension.opentelemetry.internal.service;
 
 import io.opentelemetry.context.Context;
+import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.context.propagation.TextMapSetter;
 import org.mule.extension.opentelemetry.api.ObjectStoreContextHolder;
 import org.mule.extension.opentelemetry.api.SpanContextHolder;
 import org.mule.extension.opentelemetry.api.TextMapContextHolder;
+import org.mule.extension.opentelemetry.internal.OpenTelemetryConnection;
 import org.mule.extension.opentelemetry.trace.ContextMapGetter;
 import org.mule.extension.opentelemetry.trace.ContextObjectStoreGetter;
 import org.mule.extension.opentelemetry.trace.ContextObjectStoreSetter;
@@ -22,11 +24,14 @@ import java.util.Objects;
 
 public class DefaultContextService implements ContextService {
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultContextService.class);
-    @Inject
-    private ObjectStoreManager objectStoreManager;
+    private final ObjectStoreManager objectStoreManager;
 
-    @Inject
-    private OpenTelemetryProvider openTelemetryProvider;
+    private final ContextPropagators contextPropagators;
+
+    public DefaultContextService(ObjectStoreManager objectStoreManager, ContextPropagators contextPropagators) {
+        this.objectStoreManager = objectStoreManager;
+        this.contextPropagators = contextPropagators;
+    }
 
     public void storeLocally(Context context, String transactionId) {
         ObjectStore<Serializable> defaultPartition = objectStoreManager.getDefaultPartition();
@@ -65,12 +70,12 @@ public class DefaultContextService implements ContextService {
     }
 
     public <T> Context getTraceContext(T carrier, TextMapGetter<T> textMapGetter) {
-        TextMapPropagator textMapPropagator = openTelemetryProvider.getContextPropagators().getTextMapPropagator();
+        TextMapPropagator textMapPropagator = contextPropagators.getTextMapPropagator();
         return textMapPropagator.extract(Context.current(), carrier, textMapGetter);
     }
 
     public <T> void injectTraceContext(Context context, T carrier, TextMapSetter<T> textMapSetter) {
-        TextMapPropagator textMapPropagator = openTelemetryProvider.getContextPropagators().getTextMapPropagator();
+        TextMapPropagator textMapPropagator = contextPropagators.getTextMapPropagator();
         textMapPropagator.inject(context, carrier, textMapSetter);
     }
 

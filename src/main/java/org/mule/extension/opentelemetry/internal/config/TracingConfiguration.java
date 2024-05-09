@@ -1,11 +1,11 @@
 package org.mule.extension.opentelemetry.internal.config;
 
-import org.mule.extension.opentelemetry.internal.provider.span.TraceExporter;
+import org.mule.extension.opentelemetry.internal.exporter.span.TraceExporter;
 import org.mule.runtime.api.meta.ExpressionSupport;
 import org.mule.runtime.extension.api.annotation.Expression;
 import org.mule.runtime.extension.api.annotation.param.Parameter;
 
-public class TracingConfig {
+public class TracingConfiguration {
     @Parameter
     @Expression(ExpressionSupport.NOT_SUPPORTED)
     private TraceExporter traceExporter;
@@ -14,7 +14,7 @@ public class TracingConfig {
         return traceExporter;
     }
 
-    public TracingConfig setTraceExporter(TraceExporter traceExporter) {
+    public TracingConfiguration setTraceExporter(TraceExporter traceExporter) {
         this.traceExporter = traceExporter;
         return this;
     }

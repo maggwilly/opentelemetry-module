@@ -1,6 +1,6 @@
 package org.mule.extension.opentelemetry.internal.notification;
 
-import org.mule.extension.opentelemetry.internal.provider.TracingManager;
+import org.mule.extension.opentelemetry.internal.service.TraceCollector;
 import org.mule.extension.opentelemetry.trace.Transaction;
 import org.mule.runtime.api.component.location.ComponentLocation;
 import org.mule.runtime.api.notification.EnrichedNotificationInfo;
@@ -14,10 +14,10 @@ import java.util.Optional;
 
 public class MulePipelineMessageNotificationListener implements PipelineMessageNotificationListener<PipelineMessageNotification> {
     private final Logger LOGGER = LoggerFactory.getLogger(MulePipelineMessageNotificationListener.class);
-    private final TracingManager tracingManager;
+    private final TraceCollector traceCollector;
 
-    public MulePipelineMessageNotificationListener(TracingManager tracingManager) {
-        this.tracingManager = tracingManager;
+    public MulePipelineMessageNotificationListener(TraceCollector traceCollector) {
+        this.traceCollector = traceCollector;
     }
 
     @Override
@@ -28,19 +28,19 @@ public class MulePipelineMessageNotificationListener implements PipelineMessageN
         ComponentLocation componentLocation = notificationInfo.getComponent().getLocation();
         if(action == PipelineMessageNotification.PROCESS_START){
             LOGGER.trace("PROCESS_START - Flow  {} received - ContextId {} ",componentLocation, contextId);
-            tracingManager.createTransaction(contextId, componentLocation);
+            traceCollector.createTransaction(contextId, componentLocation);
         }
        if(action == PipelineMessageNotification.PROCESS_COMPLETE){
             LOGGER.trace("PROCESS_COMPLETE - Flow {} received - ContextId {}",notification, contextId);
            Exception exception = notification.getException();
             if(Objects.nonNull(exception)){
-                Optional<Transaction> transaction = tracingManager.endTransaction(contextId,componentLocation, exception);
+                Optional<Transaction> transaction = traceCollector.endTransaction(contextId,componentLocation, exception);
                 if(!transaction.isPresent()){
                     LOGGER.warn("No transaction found with {}", contextId);
                 }
                 return;
             }
-            Optional<Transaction> transaction = tracingManager.endTransaction(contextId, componentLocation);
+            Optional<Transaction> transaction = traceCollector.endTransaction(contextId, componentLocation);
             if(!transaction.isPresent()){
                 LOGGER.warn("No transaction found with {}", contextId);
             }

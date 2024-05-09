@@ -1,10 +1,11 @@
 package org.mule.extension.opentelemetry.internal.interceptor;
 
-import org.mule.extension.opentelemetry.internal.singleton.ContextService;
+import org.mule.extension.opentelemetry.internal.OpenTelemetryConnection;
 import org.mule.runtime.api.component.ComponentIdentifier;
 import org.mule.runtime.api.component.location.ComponentLocation;
 import org.mule.runtime.api.interception.ProcessorInterceptor;
 import org.mule.runtime.api.interception.ProcessorInterceptorFactory;
+import org.mule.runtime.extension.api.annotation.param.Connection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,8 +17,8 @@ public class DefaultProcessorInterceptorFactory implements ProcessorInterceptorF
     public static final String[] OPL_COMPONENTS = new String[] {"opl:create-span","opl:create-span"};
     private final DefaultProcessorInterceptor processorTracingInterceptor;
     @Inject
-    public DefaultProcessorInterceptorFactory(ContextService contextService) {
-        this.processorTracingInterceptor = new DefaultProcessorInterceptor(contextService);
+    public DefaultProcessorInterceptorFactory(@Connection OpenTelemetryConnection openTelemetryConnection) {
+        this.processorTracingInterceptor = new DefaultProcessorInterceptor(openTelemetryConnection.getContextService());
     }
 
     @Override

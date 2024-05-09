@@ -1,22 +1,43 @@
 package org.mule.extension.opentelemetry.internal;
 
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.instrumentation.runtimemetrics.java8.*;
+import org.mule.extension.opentelemetry.internal.service.ContextService;
+import org.mule.extension.opentelemetry.internal.service.MetricCollector;
+import org.mule.extension.opentelemetry.internal.service.TraceCollector;
 
-/**
- * This class represents an extension connection just as example (there is no real connection with anything here c:).
- */
-public final class OpenTelemetryConnection {
+public class OpenTelemetryConnection{
+    private final MetricCollector metricCollector;
+    private final TraceCollector traceCollector;
+    private final  OpenTelemetry openTelemetry;
 
-  private final String id;
+    private final ContextService contextService;
 
-  public OpenTelemetryConnection(String id) {
-    this.id = id;
-  }
+    public OpenTelemetryConnection(OpenTelemetry openTelemetry, MetricCollector metricCollector, TraceCollector traceCollector, ContextService contextService) {
+        this.metricCollector = metricCollector;
+        this.traceCollector = traceCollector;
+        this.openTelemetry = openTelemetry;
+        this.contextService = contextService;
+    }
 
-  public String getId() {
-    return id;
-  }
+    public void start() {
+        MemoryPools.registerObservers(openTelemetry);
+        BufferPools.registerObservers(openTelemetry);
+        Classes.registerObservers(openTelemetry);
+        Cpu.registerObservers(openTelemetry);
+        Threads.registerObservers(openTelemetry);
+        GarbageCollector.registerObservers(openTelemetry);
+    }
 
-  public void invalidate() {
-    // do something to invalidate this connection!
-  }
+    public MetricCollector getMetricCollector() {
+        return metricCollector;
+    }
+
+    public TraceCollector getTraceCollector() {
+        return traceCollector;
+    }
+
+    public ContextService getContextService() {
+        return contextService;
+    }
 }

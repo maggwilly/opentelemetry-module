@@ -1,11 +1,9 @@
-package org.mule.extension.opentelemetry.internal.singleton;
+package org.mule.extension.opentelemetry.internal.service;
 
 import io.opentelemetry.api.trace.*;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import org.mule.extension.opentelemetry.api.SpanContextHolder;
-import org.mule.extension.opentelemetry.internal.OpenTelemetryConfiguration;
-import org.mule.extension.opentelemetry.internal.provider.TracingManager;
 import org.mule.extension.opentelemetry.trace.FlowSpan;
 import org.mule.extension.opentelemetry.trace.SpanWrapper;
 import org.mule.extension.opentelemetry.trace.Transaction;
@@ -14,12 +12,10 @@ import org.mule.extension.opentelemetry.util.OplConstants;
 import org.mule.extension.opentelemetry.util.OplUtils;
 import org.mule.runtime.api.component.location.ComponentLocation;
 import org.mule.runtime.api.store.ObjectStore;
-import org.mule.runtime.api.store.ObjectStoreManager;
 import org.mule.runtime.api.util.MultiMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.inject.Inject;
 import java.time.Instant;
 import java.util.Map;
 import java.util.Objects;
@@ -27,17 +23,18 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 
-public class TraceManager implements TracingManager {
-    private static final Logger LOGGER = LoggerFactory.getLogger(TraceManager.class);
+public class DefaultTraceCollector implements TraceCollector {
+    private static final Logger LOGGER = LoggerFactory.getLogger(DefaultTraceCollector.class);
     public static final String ID_BRIDGE = "::";
     private final Map<String, Transaction> transactionMap = new ConcurrentHashMap<>();
-    @Inject
-    private OpenTelemetryProvider openTelemetryProvider;
-    @Inject
-    private ObjectStoreManager objectStoreManager;
-    @Inject
-    private ContextService contextService;
-    private Tracer tracer;
+
+    private final ContextService contextService;
+    private final Tracer tracer;
+
+    public DefaultTraceCollector(String configName, SdkTracerProvider tracerProvider, ContextService contextService) {
+        this.contextService = contextService;
+        tracer = tracerProvider.get(configName, "1.0.0");
+    }
 
     @Override
     public void startTransaction(SpanContextHolder source, SpanWrapper trace) {
@@ -173,10 +170,5 @@ public class TraceManager implements TracingManager {
         return transactionMap.keySet().stream().filter(key -> key.contains(strings[0])).findAny();
     }
 
-    @Override
-    public void initialise(OpenTelemetryConfiguration configuration) {
-        SdkTracerProvider tracerProvider = openTelemetryProvider.getTracerProvider();
-        tracer = tracerProvider.get(configuration.getConfigName(), "1.0.0");
-    }
 
 }

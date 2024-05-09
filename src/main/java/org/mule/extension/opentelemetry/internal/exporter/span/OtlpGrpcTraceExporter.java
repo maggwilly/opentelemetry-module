@@ -1,4 +1,4 @@
-package org.mule.extension.opentelemetry.internal.provider.span;
+package org.mule.extension.opentelemetry.internal.exporter.span;
 
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporterBuilder;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;

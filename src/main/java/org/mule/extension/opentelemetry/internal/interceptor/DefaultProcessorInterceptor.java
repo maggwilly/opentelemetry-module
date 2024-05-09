@@ -1,7 +1,7 @@
 package org.mule.extension.opentelemetry.internal.interceptor;
 
 import io.opentelemetry.context.Context;
-import org.mule.extension.opentelemetry.internal.singleton.ContextService;
+import org.mule.extension.opentelemetry.internal.service.ContextService;
 
 import org.mule.extension.opentelemetry.trace.ContextMapSetter;
 import org.mule.extension.opentelemetry.util.OplConstants;

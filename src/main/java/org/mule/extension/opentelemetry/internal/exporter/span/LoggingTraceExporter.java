@@ -1,4 +1,4 @@
-package org.mule.extension.opentelemetry.internal.provider.span;
+package org.mule.extension.opentelemetry.internal.exporter.span;
 
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
@@ -7,7 +7,7 @@ import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import org.mule.extension.opentelemetry.internal.ExporterInitialisationException;
 import org.mule.runtime.extension.api.annotation.dsl.xml.TypeDsl;
 
-@TypeDsl(allowTopLevelDefinition = false, allowInlineDefinition = true)
+@TypeDsl()
 public class LoggingTraceExporter implements TraceExporter {
     @Override
     public SdkTracerProviderBuilder createSdkTracerProviderBuilder(SdkMeterProvider meterProvider) throws ExporterInitialisationException {

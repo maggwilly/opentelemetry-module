@@ -3,8 +3,8 @@ package org.mule.extension.opentelemetry.internal.interceptor;
 import org.mule.extension.http.api.HttpRequestAttributes;
 import org.mule.extension.opentelemetry.api.SpanContextHolder;
 import org.mule.extension.opentelemetry.api.TextMapContextHolder;
-import org.mule.extension.opentelemetry.internal.provider.TracingManager;
-import org.mule.extension.opentelemetry.internal.singleton.ContextService;
+import org.mule.extension.opentelemetry.internal.service.TraceCollector;
+import org.mule.extension.opentelemetry.internal.service.ContextService;
 import org.mule.extension.opentelemetry.trace.FlowSpan;
 import org.mule.extension.opentelemetry.trace.SpanWrapper;
 import org.mule.extension.opentelemetry.util.OplUtils;
@@ -24,12 +24,10 @@ import static io.opentelemetry.semconv.SemanticAttributes.*;
 
 public class DefaultSourceInterceptor implements SourceInterceptor {
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultSourceInterceptor.class);
-    private final TracingManager tracingManager;
-    private final ContextService contextService;
+    private final TraceCollector traceCollector;
 
-  public DefaultSourceInterceptor(TracingManager tracingManager, ContextService contextService) {
-        this.tracingManager = tracingManager;
-        this.contextService = contextService;
+  public DefaultSourceInterceptor(TraceCollector traceCollector) {
+        this.traceCollector = traceCollector;
   }
 
     @Override
@@ -51,7 +49,7 @@ public class DefaultSourceInterceptor implements SourceInterceptor {
         FlowSpan span = new FlowSpan().setName(componentLocation.getRootContainerName()).setAttributes(stringStringMap).setContextId(contextId);
         SpanWrapper trace = OplUtils.createSpan(span, contextId, componentLocation);
 
-        tracingManager.startTransaction(textMapContextHolder, trace);
+        traceCollector.startTransaction(textMapContextHolder, trace);
     }
 
 

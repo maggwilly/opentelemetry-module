@@ -1,4 +1,4 @@
-package org.mule.extension.opentelemetry.internal.singleton;
+package org.mule.extension.opentelemetry.internal.service;
 
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapGetter;
