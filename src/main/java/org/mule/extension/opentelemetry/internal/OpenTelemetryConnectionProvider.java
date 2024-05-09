@@ -19,7 +19,6 @@ import org.mule.extension.opentelemetry.internal.exporter.metric.MetricExporter;
 import org.mule.extension.opentelemetry.internal.exporter.span.TraceExporter;
 import org.mule.extension.opentelemetry.internal.service.*;
 import org.mule.runtime.api.connection.CachedConnectionProvider;
-import org.mule.runtime.api.connection.ConnectionException;
 import org.mule.runtime.api.connection.ConnectionValidationResult;
 import org.mule.runtime.api.meta.ExpressionSupport;
 import org.mule.runtime.api.store.ObjectStoreManager;
@@ -35,11 +34,14 @@ import javax.inject.Inject;
 
 public class OpenTelemetryConnectionProvider implements CachedConnectionProvider<OpenTelemetryConnection> {
     private final Logger LOGGER = LoggerFactory.getLogger(OpenTelemetryConnectionProvider.class);
-    @Inject
-    private ObjectStoreManager objectStoreManager;
     @RefName
     private String configName;
 
+    @Inject
+    private ObjectStoreManager objectStoreManager;
+
+    @Inject
+    private OpenTelemetryConnectionHolder connectionHolder;
     @Parameter
     @Placement(tab = "Metric", order = 1)
     @Expression(ExpressionSupport.NOT_SUPPORTED)
@@ -59,7 +61,7 @@ public class OpenTelemetryConnectionProvider implements CachedConnectionProvider
     private String serviceVersion;
 
     @Override
-    public OpenTelemetryConnection connect() throws ConnectionException {
+    public OpenTelemetryConnection connect() {
         LOGGER.info("Creating Resources for {} -{}", serviceName, configName);
         Resource resource = createResource();
         SdkMeterProvider meterProvider = createMeterProvider(resource);
@@ -70,7 +72,7 @@ public class OpenTelemetryConnectionProvider implements CachedConnectionProvider
         OpenTelemetry openTelemetry = createOpenTelemetry(meterProvider, tracerProvider, loggerProvider, contextPropagators);
         MetricCollector metricCollector = new DefaultMetricCollector(configName, meterProvider);
         TraceCollector traceCollector = new DefaultTraceCollector(configName, tracerProvider, contextPropagator);
-        return new OpenTelemetryConnection(openTelemetry, metricCollector, traceCollector, contextPropagator);
+        return connectionHolder.init(new OpenTelemetryConnection(openTelemetry, metricCollector, traceCollector, contextPropagator));
     }
 
     @Override

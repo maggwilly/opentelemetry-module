@@ -1,24 +1,22 @@
 package org.mule.extension.opentelemetry.internal.interceptor;
 
-import org.mule.extension.opentelemetry.internal.OpenTelemetryConnection;
+import org.mule.extension.opentelemetry.internal.service.OpenTelemetryConnectionHolder;
 import org.mule.runtime.api.component.ComponentIdentifier;
 import org.mule.runtime.api.component.location.ComponentLocation;
 import org.mule.runtime.api.interception.ProcessorInterceptor;
 import org.mule.runtime.api.interception.ProcessorInterceptorFactory;
-import org.mule.runtime.extension.api.annotation.param.Connection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.inject.Inject;
 import java.util.Arrays;
 
-public class DefaultProcessorInterceptorFactory implements ProcessorInterceptorFactory {
+public class DefaultProcessorInterceptorFactory implements ProcessorInterceptorFactory{
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultProcessorInterceptorFactory.class);
     public static final String[] OPL_COMPONENTS = new String[] {"opl:create-span","opl:create-span"};
-    private final DefaultProcessorInterceptor processorTracingInterceptor;
-    @Inject
-    public DefaultProcessorInterceptorFactory(@Connection OpenTelemetryConnection openTelemetryConnection) {
-        this.processorTracingInterceptor = new DefaultProcessorInterceptor(openTelemetryConnection.getContextPropagator());
+    private final DefaultProcessorInterceptor processorInterceptor;
+
+    public DefaultProcessorInterceptorFactory(OpenTelemetryConnectionHolder connectionHolder) {
+        processorInterceptor = new DefaultProcessorInterceptor(connectionHolder);
     }
 
     @Override
@@ -34,6 +32,7 @@ public class DefaultProcessorInterceptorFactory implements ProcessorInterceptorF
 
     @Override
     public ProcessorInterceptor get() {
-        return processorTracingInterceptor;
+        return processorInterceptor;
     }
+
 }

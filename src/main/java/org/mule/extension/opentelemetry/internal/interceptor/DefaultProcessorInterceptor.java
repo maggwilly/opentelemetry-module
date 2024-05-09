@@ -1,8 +1,11 @@
 package org.mule.extension.opentelemetry.internal.interceptor;
 
 import io.opentelemetry.context.Context;
+import org.mule.extension.opentelemetry.internal.OpenTelemetryConnection;
+import org.mule.extension.opentelemetry.internal.service.ConnectionHolder;
 import org.mule.extension.opentelemetry.internal.service.ContextPropagator;
 
+import org.mule.extension.opentelemetry.internal.service.OpenTelemetryConnectionHolder;
 import org.mule.extension.opentelemetry.trace.ContextMapSetter;
 import org.mule.extension.opentelemetry.util.OplConstants;
 import org.mule.runtime.api.component.ComponentIdentifier;
@@ -19,15 +22,16 @@ import java.util.Optional;
 
 public class DefaultProcessorInterceptor implements ProcessorInterceptor {
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultProcessorInterceptor.class);
-    private final ContextPropagator contextPropagator;
-
-    public DefaultProcessorInterceptor(ContextPropagator contextPropagator) {
-        this.contextPropagator = contextPropagator;
+    private final ConnectionHolder<OpenTelemetryConnection> connectionHolder;
+    public DefaultProcessorInterceptor(ConnectionHolder<OpenTelemetryConnection> connectionHolder) {
+        this.connectionHolder = connectionHolder;
     }
 
     public void after(ComponentLocation location, InterceptionEvent event, Optional<Throwable> thrown) {
+        OpenTelemetryConnection openTelemetryConnection = connectionHolder.getConnection();
         ComponentIdentifier identifier = location.getComponentIdentifier().getIdentifier();
         LOGGER.trace("After Interception - {}, identifier {}, namespace={}", location, identifier.getName(), identifier.getNamespace());
+        ContextPropagator contextPropagator = openTelemetryConnection.getContextPropagator();
         Context currentContext = contextPropagator.retrieveLocally(event.getContext().getId());
         Map<String,String> carrier = new HashMap<>();
         contextPropagator.injectTraceContext(currentContext, carrier, ContextMapSetter.INSTANCE);

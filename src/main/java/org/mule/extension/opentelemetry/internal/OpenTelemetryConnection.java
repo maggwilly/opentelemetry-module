@@ -20,13 +20,14 @@ public class OpenTelemetryConnection{
         this.contextPropagator = contextPropagator;
     }
 
-    public void start() {
+    public OpenTelemetryConnection start() {
         MemoryPools.registerObservers(openTelemetry);
         BufferPools.registerObservers(openTelemetry);
         Classes.registerObservers(openTelemetry);
         Cpu.registerObservers(openTelemetry);
         Threads.registerObservers(openTelemetry);
         GarbageCollector.registerObservers(openTelemetry);
+        return this;
     }
 
     public MetricCollector getMetricCollector() {
