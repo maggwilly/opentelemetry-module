@@ -14,7 +14,7 @@ import org.mule.extension.opentelemetry.internal.config.MetricConfiguration;
 import org.mule.extension.opentelemetry.internal.config.TracingConfiguration;
 import org.mule.extension.opentelemetry.internal.context.ContextManager;
 import org.mule.extension.opentelemetry.internal.exporter.metric.MetricExporter;
-import org.mule.extension.opentelemetry.internal.exporter.span.TraceExporter;
+import org.mule.extension.opentelemetry.internal.exporter.trace.TraceExporter;
 import org.mule.extension.opentelemetry.internal.service.*;
 import org.mule.runtime.api.connection.CachedConnectionProvider;
 import org.mule.runtime.api.connection.ConnectionValidationResult;

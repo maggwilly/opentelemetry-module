@@ -1,12 +1,10 @@
 package org.mule.extension.opentelemetry.internal;
 
-import org.mule.extension.opentelemetry.internal.exporter.metric.LoggingMetricExporter;
-import org.mule.extension.opentelemetry.internal.exporter.metric.MetricExporter;
-import org.mule.extension.opentelemetry.internal.exporter.metric.OtlpGrpcMetricExporter;
-import org.mule.extension.opentelemetry.internal.exporter.metric.PrometheusMetricExporter;
-import org.mule.extension.opentelemetry.internal.exporter.span.LoggingTraceExporter;
-import org.mule.extension.opentelemetry.internal.exporter.span.OtlpGrpcTraceExporter;
-import org.mule.extension.opentelemetry.internal.exporter.span.TraceExporter;
+import org.mule.extension.opentelemetry.internal.exporter.metric.*;
+import org.mule.extension.opentelemetry.internal.exporter.trace.LoggingTraceExporter;
+import org.mule.extension.opentelemetry.internal.exporter.trace.OtlpGrpcTraceExporter;
+import org.mule.extension.opentelemetry.internal.exporter.trace.OtlpHttpTraceExporter;
+import org.mule.extension.opentelemetry.internal.exporter.trace.TraceExporter;
 import org.mule.runtime.api.exception.MuleException;
 import org.mule.runtime.api.lifecycle.Startable;
 import org.mule.runtime.api.store.ObjectStore;
@@ -25,9 +23,8 @@ import org.slf4j.LoggerFactory;
 @Import(type = ObjectStore.class)
 @Configurations(OpenTelemetryConfiguration.class)
 @SubTypeMapping(baseType = MetricExporter.class,
-subTypes = {LoggingMetricExporter.class, OtlpGrpcMetricExporter.class, PrometheusMetricExporter.class })
-@SubTypeMapping(baseType = TraceExporter.class,
-        subTypes = {OtlpGrpcTraceExporter.class, LoggingTraceExporter.class })
+subTypes = {LoggingMetricExporter.class, OtlpHttpMetricExporter.class, OtlpGrpcMetricExporter.class, PrometheusMetricExporter.class })
+@SubTypeMapping(baseType = TraceExporter.class, subTypes = {LoggingTraceExporter.class, OtlpHttpTraceExporter.class ,OtlpGrpcTraceExporter.class})
 public class OpenTelemetryExtension implements Startable {
     private final Logger LOGGER = LoggerFactory.getLogger(OpenTelemetryExtension.class);
 

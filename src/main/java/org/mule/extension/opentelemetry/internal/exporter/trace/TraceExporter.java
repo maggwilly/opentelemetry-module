@@ -1,4 +1,4 @@
-package org.mule.extension.opentelemetry.internal.exporter.span;
+package org.mule.extension.opentelemetry.internal.exporter.trace;
 
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.trace.SdkTracerProviderBuilder;

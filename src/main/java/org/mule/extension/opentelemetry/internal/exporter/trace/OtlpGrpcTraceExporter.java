@@ -1,4 +1,4 @@
-package org.mule.extension.opentelemetry.internal.exporter.span;
+package org.mule.extension.opentelemetry.internal.exporter.trace;
 
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporterBuilder;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
@@ -16,10 +16,6 @@ import org.mule.runtime.extension.api.annotation.param.Content;
 import org.mule.runtime.extension.api.annotation.param.Optional;
 import org.mule.runtime.extension.api.annotation.param.Parameter;
 import org.mule.runtime.extension.api.annotation.param.display.DisplayName;
-
-import javax.net.ssl.SSLContext;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
 
 import static org.mule.runtime.core.api.lifecycle.LifecycleUtils.initialiseIfNeeded;
 
@@ -45,13 +41,6 @@ public class OtlpGrpcTraceExporter implements TraceExporter, Initialisable {
                 .addSpanProcessor(SimpleSpanProcessor.create(otlpGrpcSpanExporterBuilder.build()));
     }
 
-    private SSLContext getTlsContextSslContext()  {
-        try {
-            return tlsContext.createSslContext();
-        } catch (KeyManagementException | NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
-        }
-    }
 
     public String getEndPoint() {
         return endPoint;

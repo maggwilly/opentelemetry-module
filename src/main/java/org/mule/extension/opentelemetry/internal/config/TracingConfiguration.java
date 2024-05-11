@@ -1,6 +1,6 @@
 package org.mule.extension.opentelemetry.internal.config;
 
-import org.mule.extension.opentelemetry.internal.exporter.span.TraceExporter;
+import org.mule.extension.opentelemetry.internal.exporter.trace.TraceExporter;
 import org.mule.runtime.api.meta.ExpressionSupport;
 import org.mule.runtime.api.store.ObjectStore;
 import org.mule.runtime.extension.api.annotation.Expression;
