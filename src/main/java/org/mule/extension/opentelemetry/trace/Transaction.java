@@ -10,11 +10,9 @@ public class Transaction implements Serializable {
     private final String id;
     private  Span span;
     private StatusCode statusCode = StatusCode.UNSET;
-    private final SpanBuilder spanBuilder;
-
-    public Transaction(String id,  SpanBuilder spanBuilder) {
+    public Transaction(String id, Span span) {
         this.id = id;
-        this.spanBuilder = spanBuilder;
+        this.span = span;
     }
 
     public String getId() {
@@ -37,10 +35,6 @@ public class Transaction implements Serializable {
     public Transaction setSpan(Span span) {
         this.span = span;
         return this;
-    }
-
-    public SpanBuilder getSpanBuilder() {
-        return spanBuilder;
     }
 
     @Override

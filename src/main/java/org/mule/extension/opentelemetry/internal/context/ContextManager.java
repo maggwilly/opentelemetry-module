@@ -1,19 +1,16 @@
-package org.mule.extension.opentelemetry.internal.service;
+package org.mule.extension.opentelemetry.internal.context;
 
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.context.propagation.TextMapSetter;
-import org.mule.extension.opentelemetry.api.SpanContextHolder;
 import org.mule.runtime.api.store.ObjectStore;
 
 import java.io.Serializable;
 
-public interface ContextPropagator {
-    Context extractContext(SpanContextHolder source);
+public interface ContextManager {
+    void store(Context extractContext, String transactionId);
 
-    void storeLocally(Context extractContext, String transactionId);
-
-    Context retrieveLocally(String transactionId);
+    Context retrieve(String transactionId);
 
     void store(ObjectStore<Serializable> objectStore, Context context, String contextId);
 

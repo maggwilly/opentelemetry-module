@@ -1,22 +1,25 @@
 package org.mule.extension.opentelemetry.internal.interceptor;
 
 import org.mule.extension.opentelemetry.internal.OpenTelemetryConnection;
+import org.mule.extension.opentelemetry.internal.config.TracingConfiguration;
 import org.mule.extension.opentelemetry.internal.context.ContextManager;
-import org.mule.extension.opentelemetry.internal.context.HttpHeadersSpanCreator;
+import org.mule.extension.opentelemetry.internal.context.SFtpAttributesSpanCreator;
 import org.mule.extension.opentelemetry.internal.exception.SpanException;
 import org.mule.extension.opentelemetry.internal.service.ConnectionHolder;
 import org.mule.extension.opentelemetry.trace.SpanWrapper;
 import org.mule.runtime.api.component.location.ComponentLocation;
 import org.mule.runtime.api.event.Event;
 import org.mule.runtime.api.i18n.I18nMessageFactory;
-import org.mule.runtime.api.interception.InterceptionEvent;
+import org.mule.runtime.api.store.ObjectStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class HttpSourceInterceptor extends AbstractSourceInterceptor {
-    private static final Logger LOGGER = LoggerFactory.getLogger(HttpSourceInterceptor.class);
+public class SftpSourceInterceptor extends AbstractSourceInterceptor {
+    private static final Logger LOGGER = LoggerFactory.getLogger(SftpSourceInterceptor.class);
+
     private final ContextManager contextManager;
-    protected HttpSourceInterceptor(ConnectionHolder<OpenTelemetryConnection> connectionHolder, ContextManager contextManager) {
+
+    protected SftpSourceInterceptor(ConnectionHolder<OpenTelemetryConnection> connectionHolder, ContextManager contextManager) {
         super(connectionHolder);
         this.contextManager = contextManager;
     }
@@ -24,7 +27,10 @@ public class HttpSourceInterceptor extends AbstractSourceInterceptor {
     @Override
     protected SpanWrapper createSpan(Event event, ComponentLocation componentLocation) throws SpanException {
         try {
-           return new HttpHeadersSpanCreator(contextManager).createSpan(event, componentLocation);
+            OpenTelemetryConnection connection = connectionHolder.getConnection();
+            TracingConfiguration tracingConfiguration = connection.getTracingConfiguration();
+            ObjectStore propagator = tracingConfiguration.getContextPropagator();
+            return new SFtpAttributesSpanCreator(contextManager, propagator).createSpan(event, componentLocation);
         } catch (Exception e) {
             LOGGER.error("Failed to create span from source {}", e.getMessage());
             throw new SpanException(I18nMessageFactory.createStaticMessage("Failed to create span from source"));

@@ -5,21 +5,22 @@ import org.mule.extension.opentelemetry.internal.service.OpenTelemetryConnection
 import org.mule.runtime.api.component.ComponentIdentifier;
 import org.mule.runtime.api.component.location.ComponentLocation;
 import org.mule.runtime.api.interception.SourceInterceptorFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import javax.inject.Inject;
 import java.util.Arrays;
 
-public class HttpSourceInterceptorFactory implements SourceInterceptorFactory{
-  public static final String[] OPL_COMPONENTS = new String[] {"http:listener"};
-  private final HttpSourceInterceptor sourceInterceptor;
+public class SFtpSourceInterceptorFactory implements SourceInterceptorFactory{
+  private static final Logger LOGGER = LoggerFactory.getLogger(SFtpSourceInterceptorFactory.class);
+  public static final String[] OPL_COMPONENTS = new String[] {"sftp:listener"};
+  private final SftpSourceInterceptor sourceInterceptor;
 
-  @Inject
-  public HttpSourceInterceptorFactory(OpenTelemetryConnectionHolder connectionHolder, ContextManager contextManager) {
-    sourceInterceptor = new HttpSourceInterceptor(connectionHolder, contextManager);
+  public SFtpSourceInterceptorFactory(OpenTelemetryConnectionHolder connectionHolder,ContextManager contextManager) {
+    sourceInterceptor = new SftpSourceInterceptor(connectionHolder, contextManager);
   }
 
   @Override
-  public HttpSourceInterceptor get() {
+  public SftpSourceInterceptor get() {
     return sourceInterceptor;
   }
 

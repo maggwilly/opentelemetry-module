@@ -1,10 +1,7 @@
 package org.mule.extension.opentelemetry.internal;
 
 import io.opentelemetry.api.OpenTelemetry;
-import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
-import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.propagation.ContextPropagators;
-import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.exporter.logging.SystemOutLogRecordExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
@@ -15,6 +12,7 @@ import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.semconv.ResourceAttributes;
 import org.mule.extension.opentelemetry.internal.config.MetricConfiguration;
 import org.mule.extension.opentelemetry.internal.config.TracingConfiguration;
+import org.mule.extension.opentelemetry.internal.context.ContextManager;
 import org.mule.extension.opentelemetry.internal.exporter.metric.MetricExporter;
 import org.mule.extension.opentelemetry.internal.exporter.span.TraceExporter;
 import org.mule.extension.opentelemetry.internal.service.*;
@@ -39,7 +37,10 @@ public class OpenTelemetryConnectionProvider implements CachedConnectionProvider
 
     @Inject
     private ObjectStoreManager objectStoreManager;
-
+    @Inject
+    private ContextManager contextManager;
+    @Inject
+    private  ContextPropagators contextPropagators;
     @Inject
     private OpenTelemetryConnectionHolder connectionHolder;
     @Parameter
@@ -65,28 +66,21 @@ public class OpenTelemetryConnectionProvider implements CachedConnectionProvider
         LOGGER.info("Creating Resources for {} -{}", serviceName, configName);
         Resource resource = createResource();
         SdkMeterProvider meterProvider = createMeterProvider(resource);
-        ContextPropagators contextPropagators = createContextPropagators();
         SdkTracerProvider tracerProvider = createTracerProvider(resource, meterProvider);
         SdkLoggerProvider loggerProvider = createLoggerProvider(resource);
-        ContextPropagator contextPropagator = new DefaultContextPropagator(objectStoreManager, contextPropagators);
         OpenTelemetry openTelemetry = createOpenTelemetry(meterProvider, tracerProvider, loggerProvider, contextPropagators);
         MetricCollector metricCollector = new DefaultMetricCollector(configName, meterProvider);
-        TraceCollector traceCollector = new DefaultTraceCollector(configName, tracerProvider, contextPropagator);
-        return connectionHolder.init(new OpenTelemetryConnection(openTelemetry, metricCollector, traceCollector, contextPropagator));
+        TraceCollector traceCollector = new DefaultTraceCollector(configName, tracerProvider, contextManager);
+        return connectionHolder.init(new OpenTelemetryConnection(openTelemetry, metricCollector, traceCollector, metricConfiguration, tracingConfiguration));
     }
 
     @Override
     public void disconnect(OpenTelemetryConnection connection) {
-
+        connectionHolder.stop(connection);
     }
 
     private Resource createResource() {
         return Resource.getDefault().toBuilder().put(ResourceAttributes.SERVICE_NAME, serviceName).put(ResourceAttributes.SERVICE_VERSION, serviceVersion).build();
-    }
-
-    private ContextPropagators createContextPropagators() {
-        TextMapPropagator textPropagator = TextMapPropagator.composite(W3CTraceContextPropagator.getInstance(), W3CBaggagePropagator.getInstance());
-        return ContextPropagators.create(textPropagator);
     }
 
     private OpenTelemetrySdk createOpenTelemetry(SdkMeterProvider meterProvider, SdkTracerProvider tracerProvider, SdkLoggerProvider loggerProvider, ContextPropagators propagators) {

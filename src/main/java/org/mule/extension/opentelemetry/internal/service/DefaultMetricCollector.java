@@ -6,16 +6,21 @@ import io.opentelemetry.api.metrics.LongHistogram;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import org.mule.extension.opentelemetry.util.OplUtils;
+import org.mule.runtime.api.exception.MuleException;
+import org.mule.runtime.api.lifecycle.Stoppable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 
-public class DefaultMetricCollector implements MetricCollector {
+public class DefaultMetricCollector implements MetricCollector , Stoppable {
 	private final Logger LOGGER = LoggerFactory.getLogger(DefaultMetricCollector.class);
 	private final LongHistogram myHistogram;
+	private final SdkMeterProvider meterProvider;
+
 	public DefaultMetricCollector(String configName, SdkMeterProvider meterProvider) {
-		Meter meter = createMeter(meterProvider, configName);
+		this.meterProvider = meterProvider;
+		Meter meter = createMeter(this.meterProvider, configName);
 		String histogramName = OplUtils.createHistogramName(configName);
 		this.myHistogram = createHistogram(meter, histogramName);
 	}
@@ -23,6 +28,11 @@ public class DefaultMetricCollector implements MetricCollector {
 	private Meter createMeter(SdkMeterProvider meterProvider, String name) {
 		return meterProvider.meterBuilder(name)
 				.setInstrumentationVersion("1.0.0").build();
+	}
+
+	@Override
+	public void stop() throws MuleException {
+		meterProvider.close();
 	}
 
 	private LongHistogram createHistogram(Meter meter, String histogramName) {

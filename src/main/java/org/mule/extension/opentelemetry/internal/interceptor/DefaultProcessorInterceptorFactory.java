@@ -1,5 +1,6 @@
 package org.mule.extension.opentelemetry.internal.interceptor;
 
+import org.mule.extension.opentelemetry.internal.context.ContextManager;
 import org.mule.extension.opentelemetry.internal.service.OpenTelemetryConnectionHolder;
 import org.mule.runtime.api.component.ComponentIdentifier;
 import org.mule.runtime.api.component.location.ComponentLocation;
@@ -8,15 +9,17 @@ import org.mule.runtime.api.interception.ProcessorInterceptorFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.inject.Inject;
 import java.util.Arrays;
 
-public class DefaultProcessorInterceptorFactory implements ProcessorInterceptorFactory{
+public class DefaultProcessorInterceptorFactory implements ProcessorInterceptorFactory {
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultProcessorInterceptorFactory.class);
-    public static final String[] OPL_COMPONENTS = new String[] {"opl:create-span","opl:create-span"};
+    public static final String[] OPL_COMPONENTS = new String[]{"http:requester"};
     private final DefaultProcessorInterceptor processorInterceptor;
 
-    public DefaultProcessorInterceptorFactory(OpenTelemetryConnectionHolder connectionHolder) {
-        processorInterceptor = new DefaultProcessorInterceptor(connectionHolder);
+    @Inject
+    public DefaultProcessorInterceptorFactory(OpenTelemetryConnectionHolder connectionHolder, ContextManager contextManager) {
+        processorInterceptor = new DefaultProcessorInterceptor(connectionHolder, contextManager);
     }
 
     @Override
@@ -27,7 +30,7 @@ public class DefaultProcessorInterceptorFactory implements ProcessorInterceptorF
     }
 
     private String getName(ComponentIdentifier identifier) {
-        return String.format("%s:%s",identifier.getNamespace(),identifier.getName());
+        return String.format("%s:%s", identifier.getNamespace(), identifier.getName());
     }
 
     @Override

@@ -86,4 +86,12 @@ public class OtlpGrpcTraceExporter implements TraceExporter, Initialisable {
             initialiseIfNeeded(tlsContext);
         }
     }
+
+    @Override
+    public String toString() {
+        return "OtlpGrpcTraceExporter{" +
+                "endPoint='" + endPoint + '\'' +
+                ", headers=" + headers +
+                '}';
+    }
 }

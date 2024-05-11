@@ -14,4 +14,9 @@ public class LoggingTraceExporter implements TraceExporter {
         return SdkTracerProvider.builder()
                 .addSpanProcessor(SimpleSpanProcessor.create(io.opentelemetry.exporter.logging.LoggingSpanExporter.create()));
     }
+
+    @Override
+    public String toString() {
+        return "LoggingTraceExporter{}";
+    }
 }

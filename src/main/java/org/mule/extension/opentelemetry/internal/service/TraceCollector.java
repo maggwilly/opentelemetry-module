@@ -1,6 +1,5 @@
 package org.mule.extension.opentelemetry.internal.service;
 
-import org.mule.extension.opentelemetry.api.SpanContextHolder;
 import org.mule.extension.opentelemetry.trace.SpanWrapper;
 import org.mule.extension.opentelemetry.trace.Transaction;
 import org.mule.runtime.api.component.location.ComponentLocation;
@@ -13,7 +12,4 @@ public interface TraceCollector {
 
   Optional<Transaction> endTransaction(String transactionId, ComponentLocation componentLocation, Exception exception);
 
-    void startTransaction(SpanContextHolder source, SpanWrapper spanWrapper);
-
-  void createTransaction(String eventId, ComponentLocation componentLocation);
 }
