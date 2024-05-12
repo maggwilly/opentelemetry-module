@@ -59,7 +59,7 @@ public class DefaultTraceCollector implements TraceCollector, Stoppable {
 
     private Transaction createTransaction(SpanWrapper trace, Context context) {
         String transactionId = OplUtils.createTransactionId(trace.getEventId(), trace.getComponentLocation());
-        LOGGER.info("Creating  Transaction  - {}", transactionId);
+        LOGGER.trace("Creating  Transaction  - {}", transactionId);
         SpanBuilder spanBuilder = createSpanBuilder(trace.getComponentLocation()).setParent(context);
         FlowSpan flowSpan = trace.getSpan();
         MultiMap<String, String> attributes = flowSpan.getAttributes();
@@ -87,7 +87,7 @@ public class DefaultTraceCollector implements TraceCollector, Stoppable {
         String transactionId = OplUtils.createTransactionId(spanEvent.getEventId(), spanEvent.getLocation());
         this.getTransaction(transactionId).ifPresent(transaction -> {
             if (Objects.nonNull(transaction.getSpan())) {
-                LOGGER.info("Creating  Event - {}", spanEvent);
+                LOGGER.trace("Creating  Event - {}", spanEvent);
                 Span span = transaction.getSpan();
                 MultiMap<String, String> attributes = spanEvent.getAttributes();
                 AttributesBuilder builder = Attributes.builder();
@@ -99,7 +99,7 @@ public class DefaultTraceCollector implements TraceCollector, Stoppable {
     }
 
     private void updateTransaction(Transaction transaction, FlowSpan flowSpan) {
-        LOGGER.info("Updating transaction - {}", flowSpan);
+        LOGGER.trace("Updating transaction - {}", flowSpan);
         if (Objects.nonNull(transaction.getSpan())) {
             Span span = transaction.getSpan();
             MultiMap<String, String> attributes = flowSpan.getAttributes();
