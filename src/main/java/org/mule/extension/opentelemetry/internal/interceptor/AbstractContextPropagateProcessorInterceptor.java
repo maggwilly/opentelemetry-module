@@ -30,7 +30,7 @@ public abstract  class AbstractContextPropagateProcessorInterceptor extends Abst
           Context currentContext = contextManager.retrieve(event.getContext().getId());
           this.doPropagate(event, currentContext, parameters);
       }catch (Exception e){
-          LOGGER.error("Error Intercepting - {}, identifier {}, namespace={}", location, identifier.getName(), identifier.getNamespace());
+          LOGGER.error("Failed to propagate context - {}, identifier {}, namespace={}", location, identifier.getName(), identifier.getNamespace());
       }
     }
 

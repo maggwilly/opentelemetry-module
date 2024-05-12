@@ -20,13 +20,8 @@ public abstract class AbstractSourceInterceptor extends AbstractTracingHandler i
     }
 
     @Override
-    public void beforeCallback(ComponentLocation location, Map<String, ProcessorParameterValue> parameters, InterceptionEvent event) {
-        LOGGER.trace("######## Before callback: {}", location);
-    }
-
-    @Override
-    public void afterCallback(ComponentLocation componentLocation, InterceptionEvent event, Optional<Throwable> thrown) {
-        LOGGER.trace("######## After callback: {}", componentLocation);
+    public void beforeCallback(ComponentLocation componentLocation, Map<String, ProcessorParameterValue> parameters, InterceptionEvent event) {
+        LOGGER.trace("######## Before callback: {}", componentLocation);
         try {
             this.handler(componentLocation, event);
         } catch (Exception e) {
@@ -34,4 +29,8 @@ public abstract class AbstractSourceInterceptor extends AbstractTracingHandler i
         }
     }
 
+    @Override
+    public void afterCallback(ComponentLocation componentLocation, InterceptionEvent event, Optional<Throwable> thrown) {
+        LOGGER.trace("######## After callback: {}", componentLocation);
+    }
 }

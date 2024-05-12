@@ -33,6 +33,7 @@ public class SFtpContextPropagateProcessorInterceptor extends AbstractContextPro
         }
     }
 
+
     private String getContextId(Map<String, ProcessorParameterValue> parameters) {
         LOGGER.info("Getting context Id {}", parameters);
         ProcessorParameterValue targetPath = parameters.get("targetPath");

@@ -2,6 +2,7 @@ package org.mule.extension.opentelemetry.internal.context;
 
 import io.opentelemetry.context.Context;
 import org.mule.extension.http.api.HttpRequestAttributes;
+import org.mule.extension.http.api.HttpResponseAttributes;
 import org.mule.extension.opentelemetry.internal.exception.ParentContextException;
 import org.mule.extension.opentelemetry.trace.ContextMapGetter;
 import org.mule.extension.opentelemetry.util.OplUtils;
@@ -25,8 +26,10 @@ public class HttpHeadersSpanCreator extends AbstractSpanCreator {
 
     public void extractParentContext(Event event) throws ParentContextException {
         try {
+            LOGGER.info("Attributes {}", event.getMessage().getAttributes());
             TypedValue<HttpRequestAttributes> attributes = event.getMessage().getAttributes();
             HttpRequestAttributes attributesValue = attributes.getValue();
+
             Context traceContext = contextManager.getTraceContext(attributesValue.getHeaders(), ContextMapGetter.INSTANCE);
             String parentTransactionId = OplUtils.getParentTransactionId(event.getContext().getId());
             contextManager.store(traceContext, parentTransactionId);

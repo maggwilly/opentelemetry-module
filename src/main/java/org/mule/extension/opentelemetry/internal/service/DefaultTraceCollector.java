@@ -1,13 +1,12 @@
 package org.mule.extension.opentelemetry.internal.service;
 
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.trace.*;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import org.mule.extension.opentelemetry.internal.context.ContextManager;
-import org.mule.extension.opentelemetry.trace.FlowSpan;
-import org.mule.extension.opentelemetry.trace.SpanWrapper;
-import org.mule.extension.opentelemetry.trace.Transaction;
-import org.mule.extension.opentelemetry.trace.TransactionContext;
+import org.mule.extension.opentelemetry.trace.*;
 import org.mule.extension.opentelemetry.util.OplConstants;
 import org.mule.extension.opentelemetry.util.OplUtils;
 import org.mule.runtime.api.component.location.ComponentLocation;
@@ -24,7 +23,7 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 
-public class DefaultTraceCollector implements TraceCollector , Stoppable {
+public class DefaultTraceCollector implements TraceCollector, Stoppable {
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultTraceCollector.class);
 
     private final Map<String, Transaction> transactionMap = new ConcurrentHashMap<>();
@@ -83,7 +82,21 @@ public class DefaultTraceCollector implements TraceCollector , Stoppable {
                 .setStartTimestamp(Instant.now());
     }
 
-
+    @Override
+    public void addEvent(SpanEvent spanEvent) {
+        String transactionId = OplUtils.createTransactionId(spanEvent.getEventId(), spanEvent.getLocation());
+        this.getTransaction(transactionId).ifPresent(transaction -> {
+            if (Objects.nonNull(transaction.getSpan())) {
+                LOGGER.info("Creating  Event - {}", spanEvent);
+                Span span = transaction.getSpan();
+                MultiMap<String, String> attributes = spanEvent.getAttributes();
+                AttributesBuilder builder = Attributes.builder();
+                attributes.forEach(builder::put);
+                span.addEvent(spanEvent.getName(), builder.build());
+                saveTransaction(transaction);
+            }
+        });
+    }
 
     private void updateTransaction(Transaction transaction, FlowSpan flowSpan) {
         LOGGER.info("Updating transaction - {}", flowSpan);

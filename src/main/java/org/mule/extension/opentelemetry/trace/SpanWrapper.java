@@ -1,14 +1,12 @@
 package org.mule.extension.opentelemetry.trace;
 
 import io.opentelemetry.api.trace.SpanKind;
-import io.opentelemetry.api.trace.StatusCode;
 import org.mule.runtime.api.component.location.ComponentLocation;
 
 public class SpanWrapper {
     private String eventId;
     private SpanKind spanKind;
-    private String errorMessage;
-    private StatusCode statusCode;
+
     private ComponentLocation componentLocation;
 
     private FlowSpan span;
@@ -37,31 +35,8 @@ public class SpanWrapper {
         return this;
     }
 
-    public SpanKind getSpanKind() {
-        return spanKind;
-    }
-
     public SpanWrapper setSpanKind(SpanKind spanKind) {
         this.spanKind = spanKind;
-        return this;
-    }
-
-
-    public String getErrorMessage() {
-        return errorMessage;
-    }
-
-    public SpanWrapper setErrorMessage(String errorMessage) {
-        this.errorMessage = errorMessage;
-        return this;
-    }
-
-    public StatusCode getStatusCode() {
-        return statusCode;
-    }
-
-    public SpanWrapper setStatusCode(StatusCode statusCode) {
-        this.statusCode = statusCode;
         return this;
     }
 
@@ -80,8 +55,6 @@ public class SpanWrapper {
         return "Span {" +
                 "eventId='" + eventId + '\'' +
                 ", spanKind=" + spanKind +
-                ", errorMessage='" + errorMessage + '\'' +
-                ", statusCode=" + statusCode +
                 ", componentLocation=" + componentLocation +
                 ", span=" + span +
                 '}';
