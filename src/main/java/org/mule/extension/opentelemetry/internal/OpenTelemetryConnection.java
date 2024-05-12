@@ -2,8 +2,8 @@ package org.mule.extension.opentelemetry.internal;
 
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.instrumentation.runtimemetrics.java8.*;
-import org.mule.extension.opentelemetry.internal.config.MetricConfiguration;
-import org.mule.extension.opentelemetry.internal.config.TracingConfiguration;
+import org.mule.extension.opentelemetry.internal.config.MetricConfig;
+import org.mule.extension.opentelemetry.internal.config.TracingConfig;
 import org.mule.extension.opentelemetry.internal.service.MetricCollector;
 import org.mule.extension.opentelemetry.internal.service.TraceCollector;
 import org.mule.runtime.api.exception.MuleException;
@@ -14,14 +14,14 @@ public class OpenTelemetryConnection{
     private final TraceCollector traceCollector;
     private final  OpenTelemetry openTelemetry;
 
-    private  final MetricConfiguration metricConfiguration;
-    private final  TracingConfiguration tracingConfiguration;
-    public OpenTelemetryConnection(OpenTelemetry openTelemetry, MetricCollector metricCollector, TraceCollector traceCollector,MetricConfiguration metricConfiguration, TracingConfiguration tracingConfiguration) {
+    private  final MetricConfig metricConfig;
+    private final TracingConfig tracingConfig;
+    public OpenTelemetryConnection(OpenTelemetry openTelemetry, MetricCollector metricCollector, TraceCollector traceCollector, MetricConfig metricConfig, TracingConfig tracingConfig) {
         this.metricCollector = metricCollector;
         this.traceCollector = traceCollector;
         this.openTelemetry = openTelemetry;
-        this.metricConfiguration = metricConfiguration;
-        this.tracingConfiguration= tracingConfiguration;
+        this.metricConfig = metricConfig;
+        this.tracingConfig = tracingConfig;
     }
 
     public OpenTelemetryConnection start() {
@@ -34,12 +34,12 @@ public class OpenTelemetryConnection{
         return this;
     }
 
-    public MetricConfiguration getMetricConfiguration() {
-        return metricConfiguration;
+    public MetricConfig getMetricConfig() {
+        return metricConfig;
     }
 
-    public TracingConfiguration getTracingConfiguration() {
-        return tracingConfiguration;
+    public TracingConfig getTracingConfig() {
+        return tracingConfig;
     }
 
     public MetricCollector getMetricCollector() {
@@ -53,14 +53,14 @@ public class OpenTelemetryConnection{
     @Override
     public String toString() {
         return "OpenTelemetryConnection {" +
-                ", metricConfiguration=" + metricConfiguration +
-                ", tracingConfiguration=" + tracingConfiguration +
+                ", metricConfiguration=" + metricConfig +
+                ", tracingConfiguration=" + tracingConfig +
                 '}';
     }
 
     public void stop() throws MuleException {
         LifecycleUtils.stopIfNeeded(metricCollector);
         LifecycleUtils.stopIfNeeded(traceCollector);
-        LifecycleUtils.stopIfNeeded(metricConfiguration);
+        LifecycleUtils.stopIfNeeded(metricConfig);
     }
 }

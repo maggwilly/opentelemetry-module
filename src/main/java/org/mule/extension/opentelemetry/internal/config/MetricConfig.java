@@ -5,7 +5,7 @@ import org.mule.runtime.api.meta.ExpressionSupport;
 import org.mule.runtime.extension.api.annotation.Expression;
 import org.mule.runtime.extension.api.annotation.param.Parameter;
 
-public class MetricConfiguration {
+public class MetricConfig {
     @Parameter
     @Expression(ExpressionSupport.NOT_SUPPORTED)
     private MetricExporter metricExporter;

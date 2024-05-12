@@ -10,8 +10,8 @@ import io.opentelemetry.sdk.metrics.*;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.semconv.ResourceAttributes;
-import org.mule.extension.opentelemetry.internal.config.MetricConfiguration;
-import org.mule.extension.opentelemetry.internal.config.TracingConfiguration;
+import org.mule.extension.opentelemetry.internal.config.MetricConfig;
+import org.mule.extension.opentelemetry.internal.config.TracingConfig;
 import org.mule.extension.opentelemetry.internal.context.ContextManager;
 import org.mule.extension.opentelemetry.internal.exporter.metric.MetricExporter;
 import org.mule.extension.opentelemetry.internal.exporter.trace.TraceExporter;
@@ -46,12 +46,12 @@ public class OpenTelemetryConnectionProvider implements CachedConnectionProvider
     @Parameter
     @Placement(tab = "Metric", order = 1)
     @Expression(ExpressionSupport.NOT_SUPPORTED)
-    private MetricConfiguration metricConfiguration;
+    private MetricConfig metricConfig;
 
     @Parameter
     @Placement(tab = "Tracing", order = 2)
     @Expression(ExpressionSupport.NOT_SUPPORTED)
-    private TracingConfiguration tracingConfiguration;
+    private TracingConfig tracingConfig;
 
     @DisplayName("Service Name")
     @Parameter
@@ -71,7 +71,7 @@ public class OpenTelemetryConnectionProvider implements CachedConnectionProvider
         OpenTelemetry openTelemetry = createOpenTelemetry(meterProvider, tracerProvider, loggerProvider, contextPropagators);
         MetricCollector metricCollector = new DefaultMetricCollector(configName, meterProvider);
         TraceCollector traceCollector = new DefaultTraceCollector(configName, tracerProvider, contextManager);
-        return connectionHolder.init(new OpenTelemetryConnection(openTelemetry, metricCollector, traceCollector, metricConfiguration, tracingConfiguration));
+        return connectionHolder.init(new OpenTelemetryConnection(openTelemetry, metricCollector, traceCollector, metricConfig, tracingConfig));
     }
 
     @Override
@@ -90,12 +90,12 @@ public class OpenTelemetryConnectionProvider implements CachedConnectionProvider
     private SdkMeterProvider createMeterProvider(Resource resource) {
         InstrumentSelector selector = InstrumentSelector.builder().setType(InstrumentType.HISTOGRAM).setName(configName).build();
         View view = View.builder().setAggregation(Aggregation.base2ExponentialBucketHistogram()).build();
-        MetricExporter metricExporter = metricConfiguration.getMetricExporter();
+        MetricExporter metricExporter = metricConfig.getMetricExporter();
         return metricExporter.createMeterProviderBuilder().registerView(selector, view).setResource(resource).build();
     }
 
     private SdkTracerProvider createTracerProvider(Resource resource, SdkMeterProvider meterProvider) {
-        TraceExporter exporter = tracingConfiguration.getTraceExporter();
+        TraceExporter exporter = tracingConfig.getTraceExporter();
         return exporter.createSdkTracerProviderBuilder(meterProvider).setResource(resource).build();
     }
 

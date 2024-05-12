@@ -1,7 +1,7 @@
 package org.mule.extension.opentelemetry.internal.interceptor;
 
 import org.mule.extension.opentelemetry.internal.OpenTelemetryConnection;
-import org.mule.extension.opentelemetry.internal.config.TracingConfiguration;
+import org.mule.extension.opentelemetry.internal.config.TracingConfig;
 import org.mule.extension.opentelemetry.internal.context.ContextManager;
 import org.mule.extension.opentelemetry.internal.context.SFtpAttributesSpanCreator;
 import org.mule.extension.opentelemetry.internal.exception.SpanException;
@@ -19,7 +19,7 @@ public class SftpSourceInterceptor extends AbstractSourceInterceptor {
 
     private final ContextManager contextManager;
 
-    protected SftpSourceInterceptor(ConnectionHolder<OpenTelemetryConnection> connectionHolder, ContextManager contextManager) {
+    public SftpSourceInterceptor(ConnectionHolder<OpenTelemetryConnection> connectionHolder, ContextManager contextManager) {
         super(connectionHolder);
         this.contextManager = contextManager;
     }
@@ -28,8 +28,8 @@ public class SftpSourceInterceptor extends AbstractSourceInterceptor {
     protected SpanWrapper createSpan(Event event, ComponentLocation componentLocation) throws SpanException {
         try {
             OpenTelemetryConnection connection = connectionHolder.getConnection();
-            TracingConfiguration tracingConfiguration = connection.getTracingConfiguration();
-            ObjectStore propagator = tracingConfiguration.getContextPropagator();
+            TracingConfig tracingConfig = connection.getTracingConfig();
+            ObjectStore propagator = tracingConfig.getContextPropagator();
             return new SFtpAttributesSpanCreator(contextManager, propagator).createSpan(event, componentLocation);
         } catch (Exception e) {
             LOGGER.error("Failed to create span from source {}", e.getMessage());

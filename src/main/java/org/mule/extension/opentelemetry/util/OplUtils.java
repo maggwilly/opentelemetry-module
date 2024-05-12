@@ -10,7 +10,10 @@ public class OplUtils {
 	public static String createHistogramName(String serviceName) {
 		return String.format("%s-%s",serviceName, "histogram_business");
 	}
-
+	public static String createTransactionId(String eventId, ComponentLocation componentLocation) {
+		String rootContainerName = componentLocation.getRootContainerName();
+		return OplUtils.getParentTransactionId(eventId) + OplConstants.ID_BRIDGE + rootContainerName;
+	}
 	public static String getParentTransactionId(String eventId) {
 		int lastIndex = eventId.lastIndexOf('_');
 		if (lastIndex != -1) {

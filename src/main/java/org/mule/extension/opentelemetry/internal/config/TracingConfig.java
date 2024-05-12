@@ -8,7 +8,7 @@ import org.mule.runtime.extension.api.annotation.param.Optional;
 import org.mule.runtime.extension.api.annotation.param.Parameter;
 import org.mule.runtime.extension.api.annotation.param.reference.ObjectStoreReference;
 
-public class TracingConfiguration {
+public class TracingConfig {
     @Parameter
     @Expression(ExpressionSupport.NOT_SUPPORTED)
     private TraceExporter traceExporter;
@@ -22,7 +22,7 @@ public class TracingConfiguration {
         return traceExporter;
     }
 
-    public TracingConfiguration setTraceExporter(TraceExporter traceExporter) {
+    public TracingConfig setTraceExporter(TraceExporter traceExporter) {
         this.traceExporter = traceExporter;
         return this;
     }
@@ -31,7 +31,7 @@ public class TracingConfiguration {
         return contextPropagator;
     }
 
-    public TracingConfiguration setContextPropagator(ObjectStore contextPropagator) {
+    public TracingConfig setContextPropagator(ObjectStore contextPropagator) {
         this.contextPropagator = contextPropagator;
         return this;
     }

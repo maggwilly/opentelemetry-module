@@ -23,7 +23,16 @@ public  class ContextObjectStoreSetter implements TextMapSetter<ObjectStore<Seri
         LOGGER.trace("Setting value - {}- {}", key, value);
         String format = String.format("%s:%s", contextId, key);
         try {
+            this.clean(objectStore, format);
             objectStore.store(format, value);
+        } catch (ObjectStoreException e) {
+            LOGGER.warn("{}",e.getMessage());
+        }
+    }
+
+    private  void clean(ObjectStore<Serializable> objectStore, String format){
+        try {
+            objectStore.remove(format);
         } catch (ObjectStoreException e) {
             LOGGER.warn("{}",e.getMessage());
         }

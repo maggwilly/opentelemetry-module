@@ -26,7 +26,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class DefaultTraceCollector implements TraceCollector , Stoppable {
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultTraceCollector.class);
-    public static final String ID_BRIDGE = "::";
+
     private final Map<String, Transaction> transactionMap = new ConcurrentHashMap<>();
 
     private final ContextManager contextManager;
@@ -42,7 +42,7 @@ public class DefaultTraceCollector implements TraceCollector , Stoppable {
     @Override
     public void startTransaction(SpanWrapper spanWrapper) {
         LOGGER.trace("Opening transaction - {}", spanWrapper);
-        String transactionId = createTransactionId(spanWrapper.getEventId(), spanWrapper.getComponentLocation());
+        String transactionId = OplUtils.createTransactionId(spanWrapper.getEventId(), spanWrapper.getComponentLocation());
         Optional<Transaction> optionalTransaction = getTransaction(transactionId);
         if (optionalTransaction.isPresent()) {
             Transaction transaction = optionalTransaction.get();
@@ -59,7 +59,7 @@ public class DefaultTraceCollector implements TraceCollector , Stoppable {
     }
 
     private Transaction createTransaction(SpanWrapper trace, Context context) {
-        String transactionId = createTransactionId(trace.getEventId(), trace.getComponentLocation());
+        String transactionId = OplUtils.createTransactionId(trace.getEventId(), trace.getComponentLocation());
         LOGGER.info("Creating  Transaction  - {}", transactionId);
         SpanBuilder spanBuilder = createSpanBuilder(trace.getComponentLocation()).setParent(context);
         FlowSpan flowSpan = trace.getSpan();
@@ -83,10 +83,7 @@ public class DefaultTraceCollector implements TraceCollector , Stoppable {
                 .setStartTimestamp(Instant.now());
     }
 
-    private static String createTransactionId(String eventId, ComponentLocation componentLocation) {
-        String rootContainerName = componentLocation.getRootContainerName();
-        return OplUtils.getParentTransactionId(eventId) + ID_BRIDGE + rootContainerName;
-    }
+
 
     private void updateTransaction(Transaction transaction, FlowSpan flowSpan) {
         LOGGER.info("Updating transaction - {}", flowSpan);
@@ -104,12 +101,13 @@ public class DefaultTraceCollector implements TraceCollector , Stoppable {
 
     @Override
     public Optional<Transaction> endTransaction(String eventId, ComponentLocation componentLocation) {
-        String transactionId = createTransactionId(eventId, componentLocation);
+        String transactionId = OplUtils.createTransactionId(eventId, componentLocation);
         LOGGER.trace("Ending transaction - {}", transactionId);
         return getTransaction(transactionId).map(transaction -> {
             Transaction remove = transactionMap.remove(transaction.getId());
             Span span = remove.getSpan();
             if (Objects.nonNull(span)) {
+                transaction.setStatusCode(StatusCode.OK);
                 span.end();
                 LOGGER.trace("End of span - {} ", span);
             }
@@ -119,7 +117,7 @@ public class DefaultTraceCollector implements TraceCollector , Stoppable {
 
     @Override
     public Optional<Transaction> endTransaction(String eventId, ComponentLocation componentLocation, Exception exception) {
-        String transactionId = createTransactionId(eventId, componentLocation);
+        String transactionId = OplUtils.createTransactionId(eventId, componentLocation);
         LOGGER.trace("Ending transaction - {} - error {}", transactionId, exception.getMessage());
         return getTransaction(transactionId).map(transaction -> {
             Transaction remove = transactionMap.remove(transaction.getId());
@@ -154,7 +152,7 @@ public class DefaultTraceCollector implements TraceCollector , Stoppable {
     }
 
     private Optional<String> getKeyByLocation(String transactionId) {
-        String[] strings = transactionId.split(ID_BRIDGE);
+        String[] strings = transactionId.split(OplConstants.ID_BRIDGE);
         return transactionMap.keySet().stream().filter(key -> key.contains(strings[0])).findAny();
     }
 

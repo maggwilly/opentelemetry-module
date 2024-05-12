@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory;
 public class HttpSourceInterceptor extends AbstractSourceInterceptor {
     private static final Logger LOGGER = LoggerFactory.getLogger(HttpSourceInterceptor.class);
     private final ContextManager contextManager;
-    protected HttpSourceInterceptor(ConnectionHolder<OpenTelemetryConnection> connectionHolder, ContextManager contextManager) {
+    public HttpSourceInterceptor(ConnectionHolder<OpenTelemetryConnection> connectionHolder, ContextManager contextManager) {
         super(connectionHolder);
         this.contextManager = contextManager;
     }
