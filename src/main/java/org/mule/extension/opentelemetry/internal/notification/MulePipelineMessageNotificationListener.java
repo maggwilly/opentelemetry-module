@@ -7,6 +7,7 @@ import org.mule.extension.opentelemetry.internal.service.ConnectionHolder;
 import org.mule.extension.opentelemetry.trace.FlowSpan;
 import org.mule.extension.opentelemetry.trace.SpanWrapper;
 import org.mule.extension.opentelemetry.trace.Transaction;
+import org.mule.extension.opentelemetry.trace.TransactionContext;
 import org.mule.extension.opentelemetry.util.OplUtils;
 import org.mule.runtime.api.component.location.ComponentLocation;
 import org.mule.runtime.api.event.Event;
@@ -19,9 +20,7 @@ import org.mule.runtime.api.util.MultiMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class MulePipelineMessageNotificationListener extends AbstractTracingHandler implements PipelineMessageNotificationListener<PipelineMessageNotification> {
@@ -51,7 +50,12 @@ public class MulePipelineMessageNotificationListener extends AbstractTracingHand
         ComponentLocation componentLocation = notificationInfo.getComponent().getLocation();
         if (action == PipelineMessageNotification.PROCESS_START) {
             LOGGER.trace("PROCESS_START - Flow  {} received - ContextId {} ", componentLocation, eventId);
-            this.handler(componentLocation, event);
+            Transaction transaction = this.startTransaction(componentLocation, event);
+
+            String counterName = OplUtils.createCounterName(componentLocation.getRootContainerName(), "start");
+            MultiMap<String, String> stringStringMap = getAttributes(event);
+            this.addMetric(stringStringMap, transaction, counterName);
+
         }
 
         if (action == PipelineMessageNotification.PROCESS_COMPLETE) {
@@ -61,14 +65,31 @@ public class MulePipelineMessageNotificationListener extends AbstractTracingHand
                 Optional<Transaction> transaction = connectionHolderConnection.getTraceCollector().endTransaction(eventId, componentLocation, exception);
                 if (!transaction.isPresent()) {
                     LOGGER.warn("No transaction found with {}", eventId);
+                    return;
                 }
+                String counterName = OplUtils.createCounterName(componentLocation.getRootContainerName(), "exception");
+                MultiMap<String, String> stringStringMap = getAttributes(event);
+                stringStringMap.put("exception", exception.getMessage());
+                this.addMetric(stringStringMap, transaction.get(), counterName);
                 return;
             }
             Optional<Transaction> transaction = connectionHolderConnection.getTraceCollector().endTransaction(eventId, componentLocation);
             if (!transaction.isPresent()) {
                 LOGGER.warn("No transaction found with {}", eventId);
+                return;
             }
+
+            String counterName = OplUtils.createCounterName(componentLocation.getRootContainerName(), "end");
+            MultiMap<String, String> stringStringMap = getAttributes(event);
+            this.addMetric(stringStringMap, transaction.get(), counterName);
         }
+    }
+
+    private void addMetric(Map<String, String> attributes, Transaction transaction, String counterName) {
+        OpenTelemetryConnection connectionHolderConnection = connectionHolder.getConnection();
+        TransactionContext transactionContext = TransactionContext.of(transaction);
+        Map<String, Object> objectMultiMap = attributes.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, this::asObject, (s, s2) -> s2, MultiMap::new));
+        connectionHolderConnection.getMetricCollector().count(counterName, objectMultiMap, transactionContext.getContext());
     }
 
 
@@ -80,16 +101,21 @@ public class MulePipelineMessageNotificationListener extends AbstractTracingHand
     }
 
 
-    protected MultiMap<String, String> getAttributes(Event event) {
+    private MultiMap<String, String> getAttributes(Event event) {
         Map<String, TypedValue<?>> variables = event.getVariables();
         return variables.entrySet().stream().filter(entry -> {
             TypedValue<?> value = entry.getValue();
-            return (DataType.TEXT_STRING.equals(value.getDataType()));
-        }).collect(Collectors.toMap(Map.Entry::getKey, this::getValue, (s, s2) -> s2, MultiMap::new));
+            List<DataType> dataTypes = Arrays.asList(DataType.TEXT_STRING, DataType.NUMBER, DataType.BOOLEAN, DataType.STRING , DataType.ATOM_STRING);
+            return dataTypes.contains(value.getDataType());
+        }).collect(Collectors.toMap(Map.Entry::getKey, this::asString, (s, s2) -> s2, MultiMap::new));
     }
 
-    private String getValue(Map.Entry<String, TypedValue<?>> data) {
+    private String asString(Map.Entry<String, TypedValue<?>> data) {
         TypedValue<?> value = data.getValue();
         return Objects.nonNull(value.getValue()) ? value.getValue().toString() : "null";
+    }
+
+    private Object asObject(Map.Entry<String, String> data) {
+        return Objects.nonNull(data.getValue()) ? data.getValue() : "null";
     }
 }

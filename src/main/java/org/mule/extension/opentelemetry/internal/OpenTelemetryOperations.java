@@ -7,7 +7,6 @@ import org.mule.extension.opentelemetry.util.OplUtils;
 import org.mule.runtime.api.component.location.ComponentLocation;
 import org.mule.runtime.api.meta.model.operation.ExecutionType;
 import org.mule.runtime.extension.api.annotation.execution.Execution;
-import org.mule.runtime.extension.api.annotation.param.Connection;
 import org.mule.runtime.extension.api.annotation.param.Content;
 import org.mule.runtime.extension.api.annotation.param.MediaType;
 import org.mule.runtime.extension.api.annotation.param.ParameterGroup;
@@ -27,8 +26,8 @@ public class OpenTelemetryOperations {
 
     @Execution(ExecutionType.CPU_LITE)
     @MediaType(value = ANY, strict = false)
-    public void addToMetric(@Content Map<String, Object> values, long duration) {
-        connectionHolder.getConnection().getMetricCollector().observe(values, duration);
+    public void addToMetric(@Content Map<String, Object> values, String name) {
+        connectionHolder.getConnection().getMetricCollector().count(values, name);
     }
 
 

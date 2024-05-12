@@ -7,7 +7,7 @@ import org.mule.extension.opentelemetry.internal.service.OpenTelemetryConnection
 import javax.inject.Inject;
 
 public class ContextVarsPropagateProcessorInterceptorFactory extends AbstractProcessorInterceptorFactory {
-    public static final String[] OPL_COMPONENTS = new String[]{"http:request", "os:store", "os:retrieve", "os:remove", "ee:transform"};
+    public static final String[] OPL_COMPONENTS = new String[]{"http:request", "os:store", "os:retrieve", "os:remove"};
     @Inject
     public ContextVarsPropagateProcessorInterceptorFactory(OpenTelemetryConnectionHolder connectionHolder, ContextManager contextManager) {
         super(new ContextVarsPropagateProcessorInterceptor(connectionHolder, contextManager));

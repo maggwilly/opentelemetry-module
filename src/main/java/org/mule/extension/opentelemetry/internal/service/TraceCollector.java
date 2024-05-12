@@ -8,7 +8,7 @@ import org.mule.runtime.api.component.location.ComponentLocation;
 import java.util.Optional;
 
 public interface TraceCollector {
-  void startTransaction(SpanWrapper spanWrapper);
+  Transaction startTransaction(SpanWrapper spanWrapper);
   Optional<Transaction> endTransaction(String transactionId, ComponentLocation componentLocation);
 
   Optional<Transaction> endTransaction(String transactionId, ComponentLocation componentLocation, Exception exception);

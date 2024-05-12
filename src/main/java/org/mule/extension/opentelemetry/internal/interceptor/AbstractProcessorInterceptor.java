@@ -53,7 +53,12 @@ public abstract class AbstractProcessorInterceptor implements ProcessorIntercept
     }
 
     private String getValue(Map.Entry<String, ProcessorParameterValue> data) {
-        return Objects.nonNull(data.getValue()) ? data.getValue().toString() : "null";
+        ProcessorParameterValue value = data.getValue();
+        if(Objects.nonNull(value)) {
+            Object resolveValue = value.resolveValue();
+            return Objects.nonNull(resolveValue)? resolveValue.toString(): "null" ;
+        }
+        return "null";
     }
     @Override
     public void after(ComponentLocation location, InterceptionEvent event, Optional<Throwable> thrown) {

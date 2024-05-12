@@ -7,8 +7,9 @@ import org.mule.runtime.api.component.location.ComponentLocation;
 
 public class OplUtils {
 
-	public static String createHistogramName(String serviceName) {
-		return String.format("%s-%s",serviceName, "histogram_business");
+	public static String createCounterName(String name, String ... prefix) {
+		String pref = String.join(".", prefix);
+		return String.format("%s.%s.%s",pref, name.toLowerCase(), "counter");
 	}
 	public static String createTransactionId(String eventId, ComponentLocation componentLocation) {
 		String rootContainerName = componentLocation.getRootContainerName();

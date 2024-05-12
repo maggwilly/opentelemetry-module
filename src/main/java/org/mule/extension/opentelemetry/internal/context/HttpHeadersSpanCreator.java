@@ -44,6 +44,7 @@ public class HttpHeadersSpanCreator extends AbstractSpanCreator {
         TypedValue<Object> attr = event.getMessage().getAttributes();
         HttpRequestAttributes attributes = (HttpRequestAttributes) attr.getValue();
         MultiMap<String, String> tags = new MultiMap<>();
+        tags.put("mule.event.correlationId", event.getCorrelationId());
         tags.put(SERVER_ADDRESS.getKey(), attributes.getHeaders().get("host"));
         tags.put(MESSAGING_CLIENT_ID.getKey(), attributes.getHeaders().get("client_id"));
         tags.put(HTTP_REQUEST_METHOD.getKey(), attributes.getMethod());

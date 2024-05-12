@@ -49,6 +49,7 @@ public class SFtpAttributesSpanCreator extends AbstractSpanCreator {
         TypedValue<SftpFileAttributes> attributes = event.getMessage().getAttributes();
         SftpFileAttributes attr = attributes.getValue();
         MultiMap<String, String> tags = new MultiMap<>();
+        tags.put("mule.event.correlationId", event.getCorrelationId());
         tags.put("file.name", attr.getName());
         tags.put("file.path", attr.getPath());
         tags.put("file.timestamp", attr.getTimestamp().format(DateTimeFormatter.ISO_DATE_TIME));

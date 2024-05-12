@@ -15,6 +15,7 @@ import org.mule.extension.opentelemetry.internal.config.TracingConfig;
 import org.mule.extension.opentelemetry.internal.context.ContextManager;
 import org.mule.extension.opentelemetry.internal.exporter.metric.MetricExporter;
 import org.mule.extension.opentelemetry.internal.exporter.trace.TraceExporter;
+import org.mule.extension.opentelemetry.internal.resource.MuleResource;
 import org.mule.extension.opentelemetry.internal.service.*;
 import org.mule.runtime.api.connection.CachedConnectionProvider;
 import org.mule.runtime.api.connection.ConnectionValidationResult;
@@ -80,7 +81,10 @@ public class OpenTelemetryConnectionProvider implements CachedConnectionProvider
     }
 
     private Resource createResource() {
-        return Resource.getDefault().toBuilder().put(ResourceAttributes.SERVICE_NAME, serviceName).put(ResourceAttributes.SERVICE_VERSION, serviceVersion).build();
+        return Resource.getDefault().merge(MuleResource.buildResource()).toBuilder()
+                .put(ResourceAttributes.SERVICE_NAME, serviceName)
+                .put(ResourceAttributes.SERVICE_VERSION, serviceVersion)
+                .build();
     }
 
     private OpenTelemetrySdk createOpenTelemetry(SdkMeterProvider meterProvider, SdkTracerProvider tracerProvider, SdkLoggerProvider loggerProvider, ContextPropagators propagators) {
@@ -88,10 +92,8 @@ public class OpenTelemetryConnectionProvider implements CachedConnectionProvider
     }
 
     private SdkMeterProvider createMeterProvider(Resource resource) {
-        InstrumentSelector selector = InstrumentSelector.builder().setType(InstrumentType.HISTOGRAM).setName(configName).build();
-        View view = View.builder().setAggregation(Aggregation.base2ExponentialBucketHistogram()).build();
         MetricExporter metricExporter = metricConfig.getMetricExporter();
-        return metricExporter.createMeterProviderBuilder().registerView(selector, view).setResource(resource).build();
+        return metricExporter.createMeterProviderBuilder().setResource(resource).build();
     }
 
     private SdkTracerProvider createTracerProvider(Resource resource, SdkMeterProvider meterProvider) {

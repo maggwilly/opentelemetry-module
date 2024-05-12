@@ -2,6 +2,7 @@ package org.mule.extension.opentelemetry.internal.interceptor;
 
 import org.mule.extension.opentelemetry.internal.OpenTelemetryConnection;
 import org.mule.extension.opentelemetry.internal.service.ConnectionHolder;
+import org.mule.extension.opentelemetry.trace.Transaction;
 import org.mule.runtime.api.component.location.ComponentLocation;
 import org.mule.runtime.api.interception.InterceptionEvent;
 import org.mule.runtime.api.interception.ProcessorParameterValue;
@@ -23,7 +24,8 @@ public abstract class AbstractSourceInterceptor extends AbstractTracingHandler i
     public void beforeCallback(ComponentLocation componentLocation, Map<String, ProcessorParameterValue> parameters, InterceptionEvent event) {
         LOGGER.trace("######## Before callback: {}", componentLocation);
         try {
-            this.handler(componentLocation, event);
+            Transaction transaction = this.startTransaction(componentLocation, event);
+            LOGGER.trace("Start Transaction: {}", transaction);
         } catch (Exception e) {
             LOGGER.error("Interception ", e.getCause());
         }

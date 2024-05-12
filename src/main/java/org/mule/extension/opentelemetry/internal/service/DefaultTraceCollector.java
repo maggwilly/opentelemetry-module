@@ -39,7 +39,7 @@ public class DefaultTraceCollector implements TraceCollector, Stoppable {
     }
 
     @Override
-    public void startTransaction(SpanWrapper spanWrapper) {
+    public Transaction startTransaction(SpanWrapper spanWrapper) {
         LOGGER.trace("Opening transaction - {}", spanWrapper);
         String transactionId = OplUtils.createTransactionId(spanWrapper.getEventId(), spanWrapper.getComponentLocation());
         Optional<Transaction> optionalTransaction = getTransaction(transactionId);
@@ -48,13 +48,14 @@ public class DefaultTraceCollector implements TraceCollector, Stoppable {
             this.updateTransaction(transaction, spanWrapper.getSpan());
             TransactionContext transactionContext = TransactionContext.of(transaction);
             contextManager.store(transactionContext.getContext(), spanWrapper.getEventId());
-            return;
+            return transaction;
         }
         String parentTransactionId = OplUtils.getParentTransactionId(spanWrapper.getEventId());
         Context parent = contextManager.retrieve(parentTransactionId);
         Transaction transaction1 = createTransaction(spanWrapper, parent);
         TransactionContext transactionContext = TransactionContext.of(transaction1);
         contextManager.store(transactionContext.getContext(), spanWrapper.getEventId());
+        return transaction1;
     }
 
     private Transaction createTransaction(SpanWrapper trace, Context context) {
