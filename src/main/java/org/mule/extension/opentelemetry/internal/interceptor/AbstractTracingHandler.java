@@ -3,6 +3,7 @@ package org.mule.extension.opentelemetry.internal.interceptor;
 import org.mule.extension.opentelemetry.internal.OpenTelemetryConnection;
 import org.mule.extension.opentelemetry.internal.exception.SpanException;
 import org.mule.extension.opentelemetry.internal.service.ConnectionHolder;
+import org.mule.extension.opentelemetry.internal.service.TraceCollector;
 import org.mule.extension.opentelemetry.trace.SpanWrapper;
 import org.mule.extension.opentelemetry.trace.Transaction;
 import org.mule.runtime.api.component.location.ComponentLocation;
@@ -23,7 +24,8 @@ public abstract class AbstractTracingHandler {
         LOGGER.trace("Starting transaction {}", componentLocation);
         OpenTelemetryConnection holderConnection = connectionHolder.getConnection();
         SpanWrapper spanWrapper = this.createSpan(event, componentLocation);
-        return holderConnection.getTraceCollector().startTransaction(spanWrapper);
+        TraceCollector traceCollector = holderConnection.getTraceCollector();
+        return traceCollector.startTransaction(spanWrapper);
     }
 
     protected abstract SpanWrapper createSpan(Event event, ComponentLocation componentLocation) throws SpanException;

@@ -59,6 +59,10 @@ public class OpenTelemetryConfiguration implements Startable {
 
     private void doConnect(ConnectionProvider connectionProvider) {
         LOGGER.info("Connecting config {}", configName);
-        //  connectionProvider.connect();
+        try {
+            connectionProvider.connect();
+        } catch (ConnectionException e) {
+            LOGGER.error("Connecting config {}", e.getMessage());
+        }
     }
 }

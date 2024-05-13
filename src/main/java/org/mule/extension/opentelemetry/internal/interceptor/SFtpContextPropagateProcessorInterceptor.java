@@ -15,7 +15,7 @@ import java.nio.file.Paths;
 import java.util.Map;
 import java.util.Objects;
 
-public class SFtpContextPropagateProcessorInterceptor extends AbstractContextPropagateProcessorInterceptor {
+public class SFtpContextPropagateProcessorInterceptor extends ContextVarsPropagateProcessorInterceptor {
     private static final Logger LOGGER = LoggerFactory.getLogger(SFtpContextPropagateProcessorInterceptor.class);
 
     public SFtpContextPropagateProcessorInterceptor(ConnectionHolder<OpenTelemetryConnection> connectionHolder, ContextManager contextManager) {
@@ -23,6 +23,7 @@ public class SFtpContextPropagateProcessorInterceptor extends AbstractContextPro
     }
 
     protected void doPropagate(InterceptionEvent event, Context currentContext, Map<String, ProcessorParameterValue> parameters) {
+        super.doPropagate(event,currentContext,parameters);
         LOGGER.info("Propagating context  {}", parameters);
         OpenTelemetryConnection openTelemetryConnection = connectionHolder.getConnection();
         ObjectStore contextPropagator = openTelemetryConnection.getTracingConfig().getContextPropagator();

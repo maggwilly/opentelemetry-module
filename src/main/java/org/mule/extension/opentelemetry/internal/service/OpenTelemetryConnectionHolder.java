@@ -21,11 +21,11 @@ public class OpenTelemetryConnectionHolder implements ConnectionHolder<OpenTelem
 
     @Override
     public OpenTelemetryConnection init(OpenTelemetryConnection connection) {
-        LOGGER.info("Setting connection Init {}", connection);
-        if (Objects.nonNull(connection)) {
+        if (Objects.isNull(this.connection)) {
+            LOGGER.info("Setting connection Init {}", connection);
             return this.connection = connection.start();
         }
-        return this.connection;
+        return this.connection ;
     }
 
 
