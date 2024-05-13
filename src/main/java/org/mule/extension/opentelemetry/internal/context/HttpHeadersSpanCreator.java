@@ -25,7 +25,7 @@ public class HttpHeadersSpanCreator extends AbstractSpanCreator {
 
     public void extractParentContext(Event event) throws ParentContextException {
         try {
-            LOGGER.info("Attributes {}", event.getMessage().getAttributes());
+            LOGGER.trace("Attributes {}", event.getMessage().getAttributes());
             TypedValue<HttpRequestAttributes> attributes = event.getMessage().getAttributes();
             HttpRequestAttributes attributesValue = attributes.getValue();
 
