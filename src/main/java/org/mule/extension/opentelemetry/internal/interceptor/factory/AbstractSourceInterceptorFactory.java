@@ -2,20 +2,22 @@ package org.mule.extension.opentelemetry.internal.interceptor.factory;
 
 import org.mule.runtime.api.component.ComponentIdentifier;
 import org.mule.runtime.api.component.location.ComponentLocation;
+import org.mule.runtime.api.interception.ProcessorInterceptor;
+import org.mule.runtime.api.interception.ProcessorInterceptorFactory;
 import org.mule.runtime.api.interception.SourceInterceptor;
 import org.mule.runtime.api.interception.SourceInterceptorFactory;
 
 import java.util.Arrays;
 
-public abstract class AbstractSourceInterceptorFactory implements SourceInterceptorFactory {
-    private final SourceInterceptor sourceInterceptor;
+public abstract class AbstractSourceInterceptorFactory implements ProcessorInterceptorFactory {
+    private final ProcessorInterceptor sourceInterceptor;
 
-    public AbstractSourceInterceptorFactory(SourceInterceptor sourceInterceptor) {
+    public AbstractSourceInterceptorFactory(ProcessorInterceptor sourceInterceptor) {
         this.sourceInterceptor = sourceInterceptor;
     }
 
     @Override
-    public SourceInterceptor get() {
+    public ProcessorInterceptor get() {
         return sourceInterceptor;
     }
     @Override
