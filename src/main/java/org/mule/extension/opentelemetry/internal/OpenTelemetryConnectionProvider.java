@@ -92,8 +92,9 @@ public class OpenTelemetryConnectionProvider implements CachedConnectionProvider
     }
 
     private SdkMeterProvider createMeterProvider(Resource resource) {
+        InstrumentSelector selector = InstrumentSelector.builder().setType(InstrumentType.COUNTER).setName(configName).build();
         MetricExporter metricExporter = metricConfig.getMetricExporter();
-        return metricExporter.createMeterProviderBuilder().setResource(resource).build();
+        return metricExporter.createMeterProviderBuilder().registerView(selector, View.builder().build()).setResource(resource).build();
     }
 
     private SdkTracerProvider createTracerProvider(Resource resource, SdkMeterProvider meterProvider) {

@@ -13,7 +13,7 @@ import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 @TypeDsl()
 public class LoggingMetricExporter implements MetricExporter {
 	 @Parameter
-	 @Optional(defaultValue ="5")
+	 @Optional(defaultValue ="10")
     private int interval;
    
 	@Override

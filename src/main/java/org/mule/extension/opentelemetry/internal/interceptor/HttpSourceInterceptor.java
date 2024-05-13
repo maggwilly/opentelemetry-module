@@ -26,7 +26,7 @@ public class HttpSourceInterceptor extends AbstractSourceInterceptor {
         try {
            return new HttpHeadersSpanCreator(contextManager).createSpan(event, componentLocation);
         } catch (Exception e) {
-            LOGGER.error("Failed to create span from source {}", e.getMessage());
+            LOGGER.error("Failed to create span from source", e);
             throw new SpanException(I18nMessageFactory.createStaticMessage("Failed to create span from source"));
         }
     }

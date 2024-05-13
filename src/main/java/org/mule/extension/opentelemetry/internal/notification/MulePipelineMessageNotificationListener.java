@@ -86,6 +86,7 @@ public class MulePipelineMessageNotificationListener extends AbstractTracingHand
     }
 
     private void addMetric(Map<String, String> attributes, Transaction transaction, String counterName) {
+        LOGGER.trace("Adding metric  {}  {}",counterName, attributes.entrySet());
         OpenTelemetryConnection connectionHolderConnection = connectionHolder.getConnection();
         TransactionContext transactionContext = TransactionContext.of(transaction);
         Map<String, Object> objectMultiMap = attributes.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, this::asObject, (s, s2) -> s2, MultiMap::new));
@@ -105,8 +106,9 @@ public class MulePipelineMessageNotificationListener extends AbstractTracingHand
         Map<String, TypedValue<?>> variables = event.getVariables();
         return variables.entrySet().stream().filter(entry -> {
             TypedValue<?> value = entry.getValue();
+            LOGGER.trace("Vars filtering  {}  {}",entry.getValue(), value.getDataType());
             List<DataType> dataTypes = Arrays.asList(DataType.TEXT_STRING, DataType.NUMBER, DataType.BOOLEAN, DataType.STRING , DataType.ATOM_STRING);
-            return dataTypes.contains(value.getDataType());
+            return dataTypes.stream().anyMatch(dataType -> Objects.equals(value.getDataType().getType(), dataType.getType()));
         }).collect(Collectors.toMap(Map.Entry::getKey, this::asString, (s, s2) -> s2, MultiMap::new));
     }
 

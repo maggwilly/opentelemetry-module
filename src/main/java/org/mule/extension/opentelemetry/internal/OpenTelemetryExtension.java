@@ -23,7 +23,7 @@ import org.slf4j.LoggerFactory;
 @Import(type = ObjectStore.class)
 @Configurations(OpenTelemetryConfiguration.class)
 @SubTypeMapping(baseType = MetricExporter.class,
-subTypes = {LoggingMetricExporter.class, OtlpHttpMetricExporter.class, OtlpGrpcMetricExporter.class, PrometheusMetricExporter.class })
+subTypes = {LoggingMetricExporter.class, OtlpHttpMetricExporter.class, OtlpGrpcMetricExporter.class, PrometheusMetricExporter.class , DynatraceMetricExporter.class})
 @SubTypeMapping(baseType = TraceExporter.class, subTypes = {LoggingTraceExporter.class, OtlpHttpTraceExporter.class ,OtlpGrpcTraceExporter.class})
 public class OpenTelemetryExtension implements Startable {
     private final Logger LOGGER = LoggerFactory.getLogger(OpenTelemetryExtension.class);
