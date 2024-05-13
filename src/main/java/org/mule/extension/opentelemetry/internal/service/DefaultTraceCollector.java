@@ -1,5 +1,6 @@
 package org.mule.extension.opentelemetry.internal.service;
 
+import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.trace.*;
@@ -23,19 +24,17 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 
-public class DefaultTraceCollector implements TraceCollector, Stoppable {
+public class DefaultTraceCollector implements TraceCollector{
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultTraceCollector.class);
 
     private final Map<String, Transaction> transactionMap = new ConcurrentHashMap<>();
 
     private final ContextManager contextManager;
     private final Tracer tracer;
-    private final SdkTracerProvider tracerProvider;
 
-    public DefaultTraceCollector(String configName, SdkTracerProvider tracerProvider, ContextManager contextManager) {
+    public DefaultTraceCollector(String configName,  OpenTelemetry openTelemetry, ContextManager contextManager) {
         this.contextManager = contextManager;
-        this.tracerProvider = tracerProvider;
-        tracer = this.tracerProvider.get(configName, "1.0.0");
+        tracer = openTelemetry.getTracer(configName, "1.0.0");
     }
 
     @Override
@@ -170,8 +169,4 @@ public class DefaultTraceCollector implements TraceCollector, Stoppable {
         return transactionMap.keySet().stream().filter(key -> key.contains(strings[0])).findAny();
     }
 
-    @Override
-    public void stop() throws MuleException {
-        this.tracerProvider.close();
-    }
 }

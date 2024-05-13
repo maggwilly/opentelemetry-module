@@ -1,43 +1,28 @@
 package org.mule.extension.opentelemetry.internal.service;
 
+import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import org.mule.extension.opentelemetry.util.OplUtils;
-import org.mule.runtime.api.exception.MuleException;
-import org.mule.runtime.api.lifecycle.Stoppable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class DefaultMetricCollector implements MetricCollector, Stoppable {
+public class DefaultMetricCollector implements MetricCollector{
     private final Logger LOGGER = LoggerFactory.getLogger(DefaultMetricCollector.class);
     private final Map<String, LongCounter> counterMap = new ConcurrentHashMap<>();
-
-    private final SdkMeterProvider meterProvider;
+    ;
     private final Meter meter;
     private final String configName;
 
-    public DefaultMetricCollector(String configName, SdkMeterProvider meterProvider) {
-        this.meterProvider = meterProvider;
+    public DefaultMetricCollector(String configName, OpenTelemetry openTelemetry ) {
         this.configName = configName;
-        meter = createMeter(this.meterProvider, this.configName);
-    }
-
-    private Meter createMeter(SdkMeterProvider meterProvider, String name) {
-        return meterProvider.meterBuilder(name)
-                .setInstrumentationVersion("1.0.0").build();
-    }
-
-    @Override
-    public void stop() throws MuleException {
-        meterProvider.close();
+        meter = openTelemetry.getMeter(configName);
     }
 
     public void count(String name, Map<String, Object> values, Context context) {

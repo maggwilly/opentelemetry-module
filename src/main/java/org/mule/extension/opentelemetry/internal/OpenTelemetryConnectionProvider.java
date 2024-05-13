@@ -2,11 +2,11 @@ package org.mule.extension.opentelemetry.internal;
 
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.context.propagation.ContextPropagators;
-import io.opentelemetry.exporter.logging.SystemOutLogRecordExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.logs.SdkLoggerProvider;
-import io.opentelemetry.sdk.logs.export.BatchLogRecordProcessor;
-import io.opentelemetry.sdk.metrics.*;
+import io.opentelemetry.sdk.metrics.InstrumentSelector;
+import io.opentelemetry.sdk.metrics.InstrumentType;
+import io.opentelemetry.sdk.metrics.SdkMeterProvider;
+import io.opentelemetry.sdk.metrics.View;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.semconv.ResourceAttributes;
@@ -68,10 +68,10 @@ public class OpenTelemetryConnectionProvider implements CachedConnectionProvider
         Resource resource = createResource();
         SdkMeterProvider meterProvider = createMeterProvider(resource);
         SdkTracerProvider tracerProvider = createTracerProvider(resource, meterProvider);
-        SdkLoggerProvider loggerProvider = createLoggerProvider(resource);
-        OpenTelemetry openTelemetry = createOpenTelemetry(meterProvider, tracerProvider, loggerProvider, contextPropagators);
-        MetricCollector metricCollector = new DefaultMetricCollector(configName, meterProvider);
-        TraceCollector traceCollector = new DefaultTraceCollector(configName, tracerProvider, contextManager);
+        OpenTelemetry openTelemetry = createOpenTelemetry(meterProvider, tracerProvider, contextPropagators);
+
+        MetricCollector metricCollector = new DefaultMetricCollector(configName, openTelemetry);
+        TraceCollector traceCollector = new DefaultTraceCollector(configName, openTelemetry, contextManager);
         return connectionHolder.init(new OpenTelemetryConnection(openTelemetry, metricCollector, traceCollector, metricConfig, tracingConfig));
     }
 
@@ -87,8 +87,8 @@ public class OpenTelemetryConnectionProvider implements CachedConnectionProvider
                 .build();
     }
 
-    private OpenTelemetrySdk createOpenTelemetry(SdkMeterProvider meterProvider, SdkTracerProvider tracerProvider, SdkLoggerProvider loggerProvider, ContextPropagators propagators) {
-        return OpenTelemetrySdk.builder().setTracerProvider(tracerProvider).setMeterProvider(meterProvider).setLoggerProvider(loggerProvider).setPropagators(propagators).buildAndRegisterGlobal();
+    private OpenTelemetrySdk createOpenTelemetry(SdkMeterProvider meterProvider, SdkTracerProvider tracerProvider,  ContextPropagators propagators) {
+        return OpenTelemetrySdk.builder().setTracerProvider(tracerProvider).setMeterProvider(meterProvider).setPropagators(propagators).buildAndRegisterGlobal();
     }
 
     private SdkMeterProvider createMeterProvider(Resource resource) {
@@ -102,11 +102,6 @@ public class OpenTelemetryConnectionProvider implements CachedConnectionProvider
         return exporter.createSdkTracerProviderBuilder(meterProvider).setResource(resource).build();
     }
 
-    private SdkLoggerProvider createLoggerProvider(Resource resource) {
-        return SdkLoggerProvider.builder()
-                .addLogRecordProcessor(BatchLogRecordProcessor.builder(SystemOutLogRecordExporter.create()).build())
-                .setResource(resource).build();
-    }
 
     @Override
     public ConnectionValidationResult validate(OpenTelemetryConnection connection) {
